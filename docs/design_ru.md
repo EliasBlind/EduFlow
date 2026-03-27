@@ -88,7 +88,7 @@ graph TD
    * Параллельно запрашивает данные об успеваемости и профилях учащихся из **Journal Service**.
 3. **Агрегатор:** Сопоставляет полученные данные и возвращает фронтенду структурированный JSON, готовый к отрисовке без дополнительной обработки на клиенте.
 
-## Jurnal service
+## Journal service
 
 Journal Service является центральным хранилищем и поставщиком всех данных, связанных с организацией и ведением образовательного процесса. Сервис управляет:
 
@@ -106,61 +106,70 @@ Journal Service является центральным хранилищем и 
 
 | Method | Request | Response | Description |
 | :--- | :--- | :--- | :--- |
-| **CreateStudent** | CreateStudentRequest | | Добавление нового студента |
+| **CreateStudent** | CreateStudentRequest | Student | Добавление нового студента |
 | **GetStudent** | GetStudentRequest | Student | Получение данных студента по ID |
 | **ListStudents** | ListStudentsRequest | ListStudentsResponse | Список студентов с фильтрацией |
 | **UpdateStudent** | UpdateStudentRequest | Student | Обновление информации о студенте |
-| **DeleteStudent** | DeleteStudentRequest | | Удаление студента из системы |
+| **DeleteStudent** | DeleteStudentRequest | Empty | Удаление студента из системы |
 
 #### 2. Teachers (Учителя)
 
 | Method | Request | Response | Description |
 | :--- | :--- | :--- | :--- |
-| **CreateTeacher** | CreateTeacherRequest | | Добавление нового преподавателя |
+| **CreateTeacher** | CreateTeacherRequest | Teacher | Добавление нового преподавателя |
 | **ListTeachers** | ListTeachersRequest | ListTeachersResponse | Получение списка всех учителей |
 | **UpdateTeacher** | UpdateTeacherRequest | Teacher | Обновление данных преподавателя |
-| **DeleteTeacher** | DeleteTeacherRequest | | Удаление преподавателя |
+| **DeleteTeacher** | DeleteTeacherRequest | Empty | Удаление преподавателя |
 
 #### 3. Classes & Subjects (Классы и Предметы)
 
 | Method | Request | Response | Description |
 | :--- | :--- | :--- | :--- |
-| **CreateClass** | CreateClassRequest | | Создание нового учебного класса |
+| **CreateClass** | CreateClassRequest | Class | Создание нового учебного класса |
 | **GetClass** | GetClassRequest | Class | Получение данных класса по ID |
 | **ListTeacherClasses** | ListTeacherClassesRequest | ListClassesResponse | Список классов конкретного учителя |
 | **UpdateClass** | UpdateClassRequest | Class | Изменение данных класса |
-| **DeleteClass** | DeleteClassRequest | | Удаление класса |
-| **CreateSubject** | CreateSubjectRequest | | Добавление учебного предмета |
+| **DeleteClass** | DeleteClassRequest | Empty | Удаление класса |
+| **CreateSubject** | CreateSubjectRequest | Subject | Добавление учебного предмета |
 | **UpdateSubject** | UpdateSubjectRequest | Subject | Изменение названия или данных предмета |
-| **DeleteSubject** | DeleteSubjectRequest | | Удаление предмета |
+| **DeleteSubject** | DeleteSubjectRequest | Empty | Удаление предмета |
 
 #### 4. Grades (Оценки)
 
 | Method | Request | Response | Description |
 | :--- | :--- | :--- | :--- |
-| **RecordGrade** | RecordGradeRequest | | Выставить оценку студенту |
-| **GetGrade** | GetGradeRequest | Grade | Получение данных конкретной оценки |
+| **RecordGrade** | RecordGradeRequest | Grade | Выставить оценку студенту |
 | **ListGrades** | ListGradesRequest | ListGradesResponse | Ведомость оценок (фильтр по классу/предмету) |
 | **UpdateGrade** | UpdateGradeRequest | Grade | Изменение выставленной оценки |
-| **DeleteGrade** | DeleteGradeRequest | | Удаление записи об оценке |
+| **DeleteGrade** | DeleteGradeRequest | Empty | Удаление записи об оценке |
 
-#### 5. Homework (Домашнаяя работа)
+#### 5. Homework (Домашняя работа)
 
 | Method | Request | Response | Description |
 | :--- | :--- | :--- | :--- |
-| **RecordHmework** | RecordHmeworkRequest | | Написать домашнее задание |
-| **UpdateHmework** | UpdateHmeworkRequest | | Обновить данные домашнего задания |
-| **ListHomework** | ListHomeworkRequest | ListHomeworkRespone | Получение списка домашних заданий (Метод сильно зависит от того кто делает запрос) |
-| **DeleteHomework** | DeliteHomeworkRequest | | Удаление домашнего задания |
+| **RecordHomework** | RecordHomeworkRequest | Homework | Написать домашнее задание |
+| **UpdateHomework** | UpdateHomeworkRequest | Homework | Обновить данные домашнего задания |
+| **ListHomework** | ListHomeworkRequest | ListHomeworkResponse | Получение списка домашних заданий (Метод сильно зависит от того кто делает запрос) |
+| **DeleteHomework** | DeleteHomeworkRequest | Empty | Удаление домашнего задания |
 
 #### 6. Status code (Статус коды)
 
 | Method | Request | Response | Description |
 | :--- | :--- | :--- | :--- |
-| **RecordStatusCode** | RecordStatusCodeRequest | | Создать статус-код |
-| **UpdateStatusCode** | UpdateStatusCodeRequest | | Обновить статус-код |
-| **ListStatusCode** | ListStatusCodeRequest | ListStatusCodeReapone | Получение список статус-кодов |
-| **DeleteStatusCode** | DeleteStatusCodeRequest | | Удаление статус-кода |
+| **CreateStatusCode** | CreateStatusCodeRequest | StatusCode | Создать статус-код |
+| **UpdateStatusCode** | UpdateStatusCodeRequest | StatusCode | Обновить статус-код |
+| **ListStatusCode** | ListStatusCodeRequest | ListStatusCodeResponse | Получение список статус-кодов |
+| **DeleteStatusCode** | DeleteStatusCodeRequest | Empty | Удаление статус-кода |
+
+#### 7. Teaching Load (Учебная нагрузка)
+
+| Method | Request | Response | Description |
+| :--- | :--- | :--- | :--- |
+| **CreateTeachingLoad** | CreateTeachingLoadRequest | TeachingLoad | Назначить учителя на предмет в конкретном классе |
+| **UpdateTeachingLoad** | UpdateTeachingLoadRequest | TeachingLoad | Изменить параметры нагрузки (смена учителя) |
+| **ListTeachingLoad** | ListTeachingLoadRequest | ListTeachingLoadResponse | Получить список всех распределений нагрузки |
+| **GetTeachingLoad** | GetTeachingLoadRequest | TeachingLoad | Получить детали конкретного назначения |
+| **DeleteTeachingLoad** | DeleteTeachingLoadRequest | Empty | Удалить запись о нагрузке |
 
 <details>
 <summary>Структуры (proto)</summary>
@@ -176,16 +185,16 @@ Journal Service является центральным хранилищем и 
 ```mermaid
 erDiagram
     %% Core Entities
-    "Class" ||--o{ TeacherSubject : assigned
+    "Class" ||--o{ TeachingLoad  : assigned
     "Class" ||--o{ Student : studies
     "Class" ||--o{ Homework : studies
 
-    Teacher ||--o{ TeacherSubject : teaches
+    Teacher ||--o{ TeachingLoad  : teaches
     Teacher ||--o{ Homework : teaches
-    Subject ||--o{ TeacherSubject : defines
+    Subject ||--o{ TeachingLoad  : defines
     
     %% Student Interactions (Dotted for clarity)
-    TeacherSubject ||--o{ Grade : results_in
+    TeachingLoad  ||--o{ Grade : results_in
     StatusCode ||--o{ Grade: gets
     Student ||--o{ Grade : gets
 
@@ -212,7 +221,7 @@ erDiagram
         string name
     }
 
-    TeacherSubject {
+    TeachingLoad  {
         uuid id PK
         uuid teacher_id FK
         uuid subject_id FK
@@ -222,10 +231,10 @@ erDiagram
     Grade {
         uuid id PK
         uuid student_id FK
-        uuid ts_id FK
+        uuid tl_id FK
         uuid status_code_id FK
         int score
-        smallint lesson_number
+        int lesson_number
         DATE lesson_date
         string note
     }
@@ -247,7 +256,7 @@ erDiagram
 
 #### Описание статус кодов
 
-| Code | discription |
+| Code | description |
 | :--- | :--- |
 | DEBT | Задолженность. Работа не сдана в срок («точка» в журнале) |
 | ABSENT | Отсутствие. Ученика не было на уроке без объяснения причины |
