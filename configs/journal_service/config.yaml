@@ -1,0 +1,14 @@
+env: "local" # prod, dev
+
+storage:
+  host: "localhost"
+  port: 5432
+  user: "Elias"
+  db_name: "journal"
+  sslmode: "disable"
+  max_open_conns: 10
+ 
+grpc:
+  host: "localhost"
+  port: 4044
+  timeout: 2m
