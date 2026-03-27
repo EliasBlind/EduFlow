@@ -5,7 +5,7 @@ package journal.v1;
 option go_package = "github.com/EliasBlind/EduFlow/pkg/api/gen/journal/v1;journal_v1";
 
 import "google/protobuf/empty.proto";
-import "google/type/datetime.proto";
+import "google/protobuf/timestamp.proto";
 
 // Сервис управления студентами
 service StudentService {
@@ -215,7 +215,7 @@ service GradesService {
 message RecordGradeRequest {
   string                        subject_id    = 1; // uuid7
   string                        student_id    = 2; // uuid7
-  optional google.type.DateTime date_of_grade = 3;
+  optional google.protobuf.Timestamp date_of_grade = 3;
   oneof filter {
     uint32 grade          = 4;
     string status_code_id = 5;
@@ -229,7 +229,7 @@ message Grade {
   string               subject_id    = 2; // uuid7
   string               student_id    = 3; // uuid7
   string               class_id      = 4; // uuid7
-  google.type.DateTime date_of_grade = 5;
+  google.protobuf.Timestamp date_of_grade = 5;
   oneof filter {
     uint32 grade          = 6;
     string status_code_id = 7; // uuid7
@@ -244,8 +244,8 @@ message ListGradesRequest {
     string student_id = 2; // uuid7
     string class_id   = 3; // uuid7
   }
-  google.type.DateTime          start = 4;
-  optional google.type.DateTime end   = 5;
+  google.protobuf.Timestamp          start = 4;
+  optional google.protobuf.Timestamp end   = 5;
 }
 
 message ListGradesResponse {
@@ -286,8 +286,8 @@ message RecordHomeworkRequest {
   string                        class_id         = 2; // uuid7
   string                        subject_id       = 3; // uuid7
   string                        description_task = 4;
-  optional google.type.DateTime start            = 5;
-  optional google.type.DateTime end              = 6;
+  optional google.protobuf.Timestamp start            = 5;
+  optional google.protobuf.Timestamp end              = 6;
 }
 
 message Homework {
@@ -296,23 +296,23 @@ message Homework {
   string                        teacher_id       = 3; // uuid7
   string                        subject_id       = 4; // uuid7
   string                        description_task = 5;
-  optional google.type.DateTime start            = 6;
-  optional google.type.DateTime end              = 7;
+  optional google.protobuf.Timestamp start            = 6;
+  optional google.protobuf.Timestamp end              = 7;
 }
 
 message UpdateHomeworkRequest {
   string                        id               = 1; // uuid7
   string                        description_task = 2;
-  optional google.type.DateTime start            = 3;
-  optional google.type.DateTime end              = 4;
+  optional google.protobuf.Timestamp start            = 3;
+  optional google.protobuf.Timestamp end              = 4;
 }
 
 message ListHomeworkRequest {
   string class_id   = 1;
   string subject_id = 2;
 
-  optional google.type.DateTime start = 3;
-  optional google.type.DateTime end   = 4;
+  optional google.protobuf.Timestamp start = 3;
+  optional google.protobuf.Timestamp end   = 4;
 }
 
 message ListHomeworkResponse {
