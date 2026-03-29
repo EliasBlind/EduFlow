@@ -1,7 +1,7 @@
 # Project Variables
 MODULE = github.com/EliasBlind/EduFlow
-PROTO_SRC = api/proto/journal/v1
-GEN_OUT = pkg/api/gen
+PROTO_SRC = protos/journal/v1
+GEN_OUT = pkg/protos/gen
 
 .PHONY: all gen clean rebuild test build help install-deps
 
@@ -15,7 +15,7 @@ install-deps:
 ## gen: Generate Go code from journal.proto
 gen:
 	@mkdir -p $(GEN_OUT)
-	protoc --proto_path=api/proto \
+	protoc --proto_path=protos \
 		--go_out=$(GEN_OUT) --go_opt=paths=source_relative \
 		--go-grpc_out=$(GEN_OUT) --go-grpc_opt=paths=source_relative \
 		$(PROTO_SRC)/*.proto

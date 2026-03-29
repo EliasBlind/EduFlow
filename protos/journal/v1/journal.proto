@@ -1,0 +1,420 @@
+syntax = "proto3";
+
+package journal.v1;
+
+option go_package = "github.com/EliasBlind/EduFlow/pkg/api/gen/journal/v1;journalv1";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+// Сервис управления студентами
+service StudentService {
+  // Добавление нового студента в учебное заведение и класс
+  rpc CreateStudent(CreateStudentRequest) returns (Student);
+
+  // Получение информации о студенте
+  rpc GetStudent(GetStudentRequest) returns (Student);
+
+  // Получение студентов класса
+  rpc ListStudents(ListStudentsRequest) returns (ListStudentsResponse);
+
+  // Обновление информации о студенте
+  rpc UpdateStudent(UpdateStudentRequest) returns (Student);
+
+  // Удаление студента из учебного заведения
+  rpc DeleteStudent(DeleteStudentRequest) returns (google.protobuf.Empty);
+}
+
+message Student {
+  string          id        = 1; // uuid7
+  optional string class_id  = 2; // uuid7
+  string          full_name = 3;
+}
+
+message CreateStudentRequest {
+  optional string class_id  = 1; // uuid7
+  string          full_name = 2;
+}
+
+message GetStudentRequest {
+  string student_id = 1; // uuid7
+}
+
+message ListStudentsRequest {
+  string class_id = 1; // uuid7
+  uint32 limit    = 2;
+  uint32 offset   = 3;
+}
+
+message ListStudentsResponse {
+  uint32           total_count = 1;
+  repeated Student students    = 2;
+}
+
+message UpdateStudentRequest {
+  string          id        = 1; // uuid7
+  optional string class_id  = 2; // uuid7
+  optional string full_name = 3;
+}
+
+message DeleteStudentRequest {
+  string id = 1;
+}
+
+// Сервис для работы с учителями
+service TeacherService {
+  // Создание учителя
+  rpc CreateTeacher(CreateTeacherRequest) returns (Teacher);
+
+  // Получение всех учителей учебного заведения
+  rpc ListTeachers(ListTeachersRequest) returns (ListTeachersResponse);
+
+  // Обновление данных учителя
+  rpc UpdateTeacher(UpdateTeacherRequest) returns (Teacher);
+
+  // Удаление учителя
+  rpc DeleteTeacher(DeleteTeacherRequest) returns (google.protobuf.Empty);
+}
+
+message Teacher {
+  string id        = 1; // uuid7
+  string full_name = 2;
+}
+
+message CreateTeacherRequest {
+  string full_name = 1;
+}
+
+message ListTeachersRequest {
+  uint32 limit  = 1;
+  uint32 offset = 2;
+}
+
+message ListTeachersResponse {
+  uint32           total_count = 1;
+  repeated Teacher teachers    = 2;
+}
+
+message UpdateTeacherRequest {
+  string id        = 1; // uuid7
+  string full_name = 2;
+}
+
+message DeleteTeacherRequest {
+  string id = 1; // uuid7
+}
+
+// Сервис для управления классами
+service ClassesService {
+  // Создание нового класса
+  rpc CreateClass(CreateClassRequest) returns (Class);
+
+  // Получение класса по id
+  rpc GetClass(GetClassRequest) returns (Class);
+
+  // Получение классов у которые обучаются у конкретного учителя
+  rpc ListTeacherClasses(ListTeacherClassesRequest) returns (ListClassesResponse);
+
+  // Обновление информации класса
+  rpc UpdateClass(UpdateClassRequest) returns (Class);
+
+  // Удаление класса
+  rpc DeleteClass(DeleteClassRequest) returns (google.protobuf.Empty);
+}
+
+message CreateClassRequest {
+  string class_name = 2;
+  // Сколько лет обучается
+  uint32 year_of_study = 3;
+  // Год окончания
+  uint32 graduation_year = 4;
+}
+
+message Class {
+  string id         = 1; // uuid7
+  string class_name = 2;
+  // Год обучения
+  uint32 year_of_study = 3;
+  // Сколько лет учиться
+  uint32 graduation_year = 4;
+}
+
+message GetClassRequest {
+  string id = 1; // uuid7
+}
+
+message ListTeacherClassesRequest {
+  string teacher_id = 1; // uuid7
+  uint32 limit      = 2;
+  uint32 offset     = 3;
+}
+
+message ListClassesResponse {
+  uint32         total_count = 1;
+  repeated Class classes     = 2;
+}
+
+message UpdateClassRequest {
+  string          id         = 1; // uuid7
+  optional string class_name = 2;
+  // Год обучения
+  optional uint32 year_of_study = 3;
+  // Сколько лет учиться
+  optional uint32 graduation_year = 4;
+}
+
+message DeleteClassRequest {
+  string id = 1; // uuid7
+}
+
+// Работа с предметами
+service SubjectService {
+  // Создание нового предмета
+  rpc CreateSubject(CreateSubjectRequest) returns (Subject);
+
+  // Обновление информации о предмете
+  rpc UpdateSubject(UpdateSubjectRequest) returns (Subject);
+
+  // Удаление предмета
+  rpc DeleteSubject(DeleteSubjectRequest) returns (google.protobuf.Empty);
+}
+
+message CreateSubjectRequest {
+  string name = 1;
+}
+
+message Subject {
+  string id   = 1; // uuid7
+  string name = 2;
+}
+
+message UpdateSubjectRequest {
+  string id   = 1; // uuid7
+  string name = 2;
+}
+
+message DeleteSubjectRequest {
+  string id = 1; // uuid7
+}
+
+// Сервис работы с оценками
+service GradesService {
+  // Выставить оценку
+  rpc RecordGrade(RecordGradeRequest) returns (Grade);
+
+  // Получение оценок по предметам
+  rpc ListGrades(ListGradesRequest) returns (ListGradesResponse);
+
+  // Изменение оценки
+  rpc UpdateGrade(UpdateGradeRequest) returns (Grade);
+
+  // Удаление оценки
+  rpc DeleteGrade(DeleteGradeRequest) returns (google.protobuf.Empty);
+}
+
+message RecordGradeRequest {
+  string                        subject_id    = 1; // uuid7
+  string                        student_id    = 2; // uuid7
+  optional google.protobuf.Timestamp date_of_grade = 3;
+  oneof filter {
+    uint32 grade          = 4;
+    string status_code_id = 5;
+  }
+  uint32          lesson_number = 6;
+  optional string note          = 7;
+}
+
+message Grade {
+  string               id            = 1; // uuid7
+  string               subject_id    = 2; // uuid7
+  string               student_id    = 3; // uuid7
+  string               class_id      = 4; // uuid7
+  google.protobuf.Timestamp date_of_grade = 5;
+  oneof filter {
+    uint32 grade          = 6;
+    string status_code_id = 7; // uuid7
+  }
+  uint32          lesson_number = 8;
+  optional string note          = 9;
+}
+
+message ListGradesRequest {
+  optional string subject_id = 1; // uuid7
+  oneof filter {
+    string student_id = 2; // uuid7
+    string class_id   = 3; // uuid7
+  }
+  google.protobuf.Timestamp          start = 4;
+  optional google.protobuf.Timestamp end   = 5;
+}
+
+message ListGradesResponse {
+  uint32         total_count = 1;
+  repeated Grade grades      = 2;
+}
+
+message UpdateGradeRequest {
+  string grade_id = 1; // uuid7
+  oneof filter {
+    uint32 grade          = 2;
+    string status_code_id = 3;
+  }
+  optional string note = 4;
+}
+
+message DeleteGradeRequest {
+  string id = 1;
+}
+
+// Управление домашним заданием
+service HomeworkService {
+  // Создание домашнего задания
+  rpc RecordHomework(RecordHomeworkRequest) returns (Homework);
+
+  // Обновление домашнего задания
+  rpc UpdateHomework(UpdateHomeworkRequest) returns (Homework);
+
+  // Получение домашнего задания класса
+  rpc ListHomework(ListHomeworkRequest) returns (ListHomeworkResponse);
+
+  // Удаление домашней работы
+  rpc DeleteHomework(DeleteHomeworkRequest) returns (google.protobuf.Empty);
+}
+
+message RecordHomeworkRequest {
+  string                        teacher_id       = 1; // uuid7
+  string                        class_id         = 2; // uuid7
+  string                        subject_id       = 3; // uuid7
+  string                        description_task = 4;
+  optional google.protobuf.Timestamp start            = 5;
+  optional google.protobuf.Timestamp end              = 6;
+}
+
+message Homework {
+  string                        id               = 1; // uuid7
+  string                        class_id         = 2; // uuid7
+  string                        teacher_id       = 3; // uuid7
+  string                        subject_id       = 4; // uuid7
+  string                        description_task = 5;
+  optional google.protobuf.Timestamp start            = 6;
+  optional google.protobuf.Timestamp end              = 7;
+}
+
+message UpdateHomeworkRequest {
+  string                        id               = 1; // uuid7
+  string                        description_task = 2;
+  optional google.protobuf.Timestamp start            = 3;
+  optional google.protobuf.Timestamp end              = 4;
+}
+
+message ListHomeworkRequest {
+  string class_id   = 1;
+  string subject_id = 2;
+
+  optional google.protobuf.Timestamp start = 3;
+  optional google.protobuf.Timestamp end   = 4;
+}
+
+message ListHomeworkResponse {
+  uint32            total_count = 1;
+  repeated Homework homeworks   = 2;
+}
+
+message DeleteHomeworkRequest {
+  string id = 1; // uuid7
+}
+
+// Сервис управление статус-кодамиDeleteStatusCodeRequest
+service StatusCodeService {
+  // Создание нового статус кода
+  rpc CreateStatusCode(CreateStatusCodeRequest) returns (StatusCode);
+
+  // Обновление название статус кода
+  rpc UpdateStatusCode(UpdateStatusCodeRequest) returns (StatusCode);
+
+  // Все статус кода
+  rpc ListStatusCode(ListStatusCodeRequest) returns (ListStatusCodeResponse);
+
+  // Удаление статус кода
+  rpc DeleteStatusCode(DeleteStatusCodeRequest) returns (google.protobuf.Empty);
+}
+
+message CreateStatusCodeRequest {
+  string name = 1;
+}
+
+message StatusCode {
+  string id   = 1; // uuid7
+  string name = 2;
+}
+
+message UpdateStatusCodeRequest {
+  string id   = 1; // uuid7
+  string name = 2;
+}
+
+message ListStatusCodeRequest { }
+
+message ListStatusCodeResponse {
+  repeated StatusCode status_code = 1;
+}
+
+message DeleteStatusCodeRequest {
+  string id = 1; // uuid7
+}
+
+// Сервис отвечающий за то у кого и какие предметы ведет учитель
+service TeachingLoadService {
+  // Назначение вести предмет учителю для конкретного класса
+  rpc CreateTeachingLoad(CreateTeachingLoadRequest) returns (TeachingLoad);
+
+  // Замена преподавателя для предмета
+  rpc UpdateTeachingLoad(UpdateTeachingLoadRequest) returns (TeachingLoad);
+
+  // Получить список всех распределений нагрузки
+  rpc ListTeachingLoad(ListTeachingLoadRequest) returns (ListTeachingLoadResponse);
+
+  // Получение конкретного назначение
+  rpc GetTeachingLoad(GetTeachingLoadRequest) returns (TeachingLoad);
+
+  // Удалить запись о нагрузке
+  rpc DeleteTeachingLoad(DeleteTeachingLoadRequest) returns (google.protobuf.Empty);
+}
+
+message CreateTeachingLoadRequest {
+  string teacher_id = 1; // uuid7
+  string subject_id = 2; // uuid7
+  string class_id   = 3; // uuid7
+}
+
+message TeachingLoad {
+  string id         = 1; // uuid7
+  string teacher_id = 2; // uuid7
+  string subject_id = 3; // uuid7
+  string class_id   = 4; // uuid7
+}
+
+message UpdateTeachingLoadRequest {
+  string id         = 1; // uuid7
+  string teacher_id = 2; // uuid7
+}
+
+message ListTeachingLoadRequest {
+  oneof filter {
+    string teacher_id = 1; // uuid7
+    string class_id_id = 2; // uuid7
+  }
+}
+
+message ListTeachingLoadResponse {
+  uint32                total_count    = 1;
+  repeated TeachingLoad teaching_loads = 2;
+}
+
+message GetTeachingLoadRequest {
+  string id = 1; // uuid7
+}
+
+message DeleteTeachingLoadRequest {
+  string id = 1; // uuid7
+}
