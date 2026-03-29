@@ -1,4 +1,4 @@
-env: "local" # prod, dev
+env: "local" # local, dev, prod
 
 storage:
   host: "localhost"
