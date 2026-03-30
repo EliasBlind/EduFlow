@@ -58,7 +58,7 @@ func MustLoad() *Config {
 
 // Получение пути к файлу конфигурации через флаг,
 // через переменные окружения или через стандартный путь
-// Приоритет: flag > env
+// Приоритет: flag > env > default
 func fetchConfigPath() string {
 	var res string
 
