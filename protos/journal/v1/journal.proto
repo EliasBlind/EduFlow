@@ -123,11 +123,12 @@ service ClassesService {
 }
 
 message CreateClassRequest {
-  string class_name = 2;
+  string class_name = 1;
   // Сколько лет обучается
-  uint32 year_of_study = 3;
-  // Год окончания
-  uint32 graduation_year = 4;
+  uint32 year_of_study = 2;
+  // Год окончания, если не установлен то будет по считан:
+  // year_of_study + текущий год
+  optional uint32 graduation_year = 3;
 }
 
 message Class {
@@ -180,17 +181,17 @@ service SubjectService {
 }
 
 message CreateSubjectRequest {
-  string name = 1;
+  string full_name = 1;
 }
 
 message Subject {
   string id   = 1; // uuid7
-  string name = 2;
+  string full_name = 2;
 }
 
 message UpdateSubjectRequest {
   string id   = 1; // uuid7
-  string name = 2;
+  string full_name = 2;
 }
 
 message DeleteSubjectRequest {
@@ -340,17 +341,17 @@ service StatusCodeService {
 }
 
 message CreateStatusCodeRequest {
-  string name = 1;
+  string full_name = 1;
 }
 
 message StatusCode {
   string id   = 1; // uuid7
-  string name = 2;
+  string full_name = 2;
 }
 
 message UpdateStatusCodeRequest {
   string id   = 1; // uuid7
-  string name = 2;
+  string full_name = 2;
 }
 
 message ListStatusCodeRequest { }
@@ -402,7 +403,7 @@ message UpdateTeachingLoadRequest {
 message ListTeachingLoadRequest {
   oneof filter {
     string teacher_id = 1; // uuid7
-    string class_id_id = 2; // uuid7
+    string class_id = 2; // uuid7
   }
 }
 
