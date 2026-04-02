@@ -3,6 +3,7 @@ package config
 import (
 	"flag"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -45,7 +46,7 @@ func (e Env) IsDev() bool   { return e == EnvDev }
 func (e Env) IsProd() bool  { return e == EnvProd }
 
 func MustLoad() *Config {
-	_ = godotenv.Load()
+	godotenv.Load()
 
 	var cfg Config
 	path := fetchConfigPath()
@@ -72,6 +73,11 @@ func fetchConfigPath() string {
 
 	if res == "" {
 		res = "configs/journal_service/config.yaml"
+	}
+
+	ext := filepath.Ext(res)
+	if ext != ".yaml" && ext != ".yml" {
+		panic("invalid extension: " + res)
 	}
 
 	if _, err := os.Stat(res); os.IsNotExist(err) {
