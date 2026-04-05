@@ -64,8 +64,9 @@ func fetchConfigPath() string {
 	var res string
 
 	// --config="path/to/config.yaml"
-	flag.StringVar(&res, "config", "", "path to config file")
-	flag.Parse()
+	fs := flag.NewFlagSet("config", flag.ContinueOnError)
+	fs.StringVar(&res, "config", "", "path to config file")
+	fs.Parse(os.Args[1:])
 
 	if res == "" {
 		res = os.Getenv("JOURNAL_CONFIG_PATH")
