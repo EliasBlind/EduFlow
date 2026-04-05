@@ -3,7 +3,7 @@ package domain
 // Все ID uuid7
 
 type Teacher struct {
-	ID       string
+	ID       ID
 	FullName string
 }
 
@@ -14,10 +14,10 @@ type ListTeachersRequest struct {
 
 type ListTeachersResponse struct {
 	TotalCount uint32
-	teachers   []Teacher
+	Teachers   []Teacher
 }
 
 type UpdateTeacher struct {
-	ID       string
+	ID       ID
 	FullName string
 }

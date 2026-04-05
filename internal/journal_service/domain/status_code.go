@@ -3,11 +3,16 @@ package domain
 // Все ID uuid7
 
 type StatusCode struct {
-	ID       string
+	ID       ID
 	FullName string
 }
 
 type UpdateStatusCode struct {
-	ID       string
+	ID       ID
 	FullName string
+}
+
+type ListStatusCode struct {
+	TotalCount  uint32
+	StatusCodes []StatusCode
 }

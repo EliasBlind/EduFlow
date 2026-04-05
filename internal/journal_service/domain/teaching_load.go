@@ -3,30 +3,30 @@ package domain
 // Все ID uuid7
 
 type CreateTeachingLoad struct {
-	TeacherID string
-	SubjectID string
-	ClassID   string
+	TeacherID ID
+	SubjectID ID
+	ClassID   ID
 }
 
 type TeachingLoad struct {
-	ID        string
-	TeacherID string
-	SubjectID string
-	ClassID   string
+	ID        ID
+	TeacherID ID
+	SubjectID ID
+	ClassID   ID
 }
 
 type UpdateTeachingLoad struct {
-	ID        string
-	TeacherID string
+	ID        ID
+	TeacherID ID
 }
 
 type ListTeachingLoadRequest struct {
 	// Может быть только одно поле (oneof)
-	TeacherID *string
-	ClassID   *string
+	TeacherID *ID
+	ClassID   *ID
 }
 
 type ListTeachingLoadResponse struct {
-	TotalCount uint32
+	TotalCount    uint32
 	TeachingLoads []TeachingLoad
 }

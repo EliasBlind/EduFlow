@@ -3,29 +3,29 @@ package domain
 // Все ID uuid7
 
 type Student struct {
-	ID       string
-	ClassID  *string
+	ID       ID
+	ClassID  *ID
 	FullName string
 }
 
 type CreateStudent struct {
-	ClassID  *string
+	ClassID  *ID
 	FullName string
 }
 
 type ListStudentsRequest struct {
-	ClassID string
+	ClassID ID
 	Limit   uint32
 	Offset  uint32
 }
 
-type ListStudentsResult struct {
+type ListStudentsResponse struct {
 	TotalCount uint32
-	students   []Student
+	Students   []Student
 }
 
 type UpdateStudent struct {
-	ID       string
-	ClassID  *string
+	ID       ID
+	ClassID  *ID
 	FullName *string
 }

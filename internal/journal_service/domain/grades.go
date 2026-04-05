@@ -5,42 +5,42 @@ import "time"
 // Все ID uuid7
 
 type RecordGrade struct {
-	SubjectID   string
-	StudentID   string
+	SubjectID   ID
+	StudentID   ID
 	DateOfGrade *time.Time
 
 	// Может быть только одно поле (oneof)
 	Grade        *uint32
-	StatusCodeID *string
+	StatusCodeID *ID
 
 	LessonNumber uint32
 	Note         *string
 }
 
 type Grade struct {
-	ID          string
-	SubjectID   string
-	StudentID   string
-	ClassID     string
+	ID          ID
+	SubjectID   ID
+	StudentID   ID
+	ClassID     ID
 	DateOfGrade *time.Time
 
 	// Может быть только одно поле (oneof)
 	Grade        *uint32
-	StatusCodeID string
+	StatusCodeID ID
 
 	LessonNumber *uint32
 	Note         *string
 }
 
 type ListGradesRequest struct {
-	SubjectID *string
+	SubjectID *ID
 
 	// Может быть только одно поле (oneof)
-	StudentID string
-	ClassID   string
+	StudentID ID
+	ClassID   ID
 
-	start *time.Time
-	end   *time.Time // Может отсутствовать (optional)
+	Start *time.Time
+	End   *time.Time // Может отсутствовать (optional)
 }
 
 type ListGradesResponse struct {
@@ -49,11 +49,11 @@ type ListGradesResponse struct {
 }
 
 type UpdateGrade struct {
-	GradeID string
+	GradeID ID
 
 	// Может быть только одно поле (oneof)
-	Grade        uint16
-	StatusCodeID string
+	Grade        *uint32
+	StatusCodeID *ID
 
 	Note *string
 }

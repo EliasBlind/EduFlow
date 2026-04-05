@@ -3,11 +3,11 @@ package domain
 // Все ID uuid7
 
 type Subject struct {
-	ID       string
+	ID       ID
 	FullName string
 }
 
 type UpdateSubject struct {
-	ID       string
+	ID       ID
 	FullName string
 }

@@ -5,47 +5,47 @@ import "time"
 // Все ID uuid7
 
 type RecordHomework struct {
-	TeacherID       string
-	ClassID         string
-	SubjectID       string
+	TeacherID       ID
+	ClassID         ID
+	SubjectID       ID
 	DescriptionTask string
 
 	// Данные ниже могут быть nil (optional)
-	start *time.Time
-	end   *time.Time
+	Start *time.Time
+	End   *time.Time
 }
 
 type Homework struct {
-	ID              string
-	ClassID         string
-	TeacherID       string
-	SubjectID       string
+	ID              ID
+	ClassID         ID
+	TeacherID       ID
+	SubjectID       ID
 	DescriptionTask string
 
 	// Данные ниже могут быть nil (optional)
-	start *time.Time
-	end   *time.Time
+	Start *time.Time
+	End   *time.Time
 }
 
 type UpdateHomework struct {
-	ID              string
+	ID              ID
 	DescriptionTask string
 
 	// Данные ниже могут быть nil (optional)
-	start *time.Time
-	end   *time.Time
+	Start *time.Time
+	End   *time.Time
 }
 
 type ListHomeworkRequest struct {
-	ClassID   string
-	SubjectID string
+	ClassID   ID
+	SubjectID ID
 
 	// Данные ниже могут быть nil (optional)
-	start *time.Time
-	end   *time.Time
+	Start *time.Time
+	End   *time.Time
 }
 
 type ListHomeworkResponse struct {
 	TotalCount uint32
-	homeworks  []Homework
+	Homeworks  []Homework
 }
