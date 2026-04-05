@@ -43,19 +43,19 @@ test:
 	go test -v ./...
 
 ## cover: Run tests and show coverage percentage in terminal
-cover:
+cover: gen
 	go test -coverprofile=$(COVER_OUT) ./...
 	go tool cover -func=$(COVER_OUT)
 
 ## cover-html: Generate HTML coverage report and open it in browser
-cover-std-html:
+cover-std-html: gen
 	@mkdir -p $(REPORT_PATH)
 	go test -coverprofile=$(COVER_OUT) ./...
 	go tool cover -html=$(COVER_OUT) -o $(REPORT_PATH)/coverage.html
 	xdg-open $(REPORT_PATH)/coverage.html
 
 ## cover-nice: Generate a beautiful coverage report
-cover-html:
+cover-html: gen
 	@mkdir -p $(REPORT_PATH)
 	gocov test ./pkg/utils/convert/... | gocov-html > $(REPORT_PATH)/pretty_coverage.html
 	xdg-open $(REPORT_PATH)/pretty_coverage.html
