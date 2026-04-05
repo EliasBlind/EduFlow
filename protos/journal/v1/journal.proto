@@ -2,7 +2,8 @@ syntax = "proto3";
 
 package journal.v1;
 
-option go_package = "github.com/EliasBlind/EduFlow/pkg/api/gen/journal/v1;journalv1";
+option go_package = "github.com/EliasBlind/EduFlow/pkg/protos/gen/journal/v1;journalv1";
+
 
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
@@ -145,9 +146,9 @@ message GetClassRequest {
 }
 
 message ListTeacherClassesRequest {
-  string teacher_id = 1; // uuid7
-  uint32 limit      = 2;
-  uint32 offset     = 3;
+  string teacher_id = 1;
+  uint32 limit = 2;
+  uint32 offset = 3;
 }
 
 message ListClassesResponse {
@@ -357,7 +358,8 @@ message UpdateStatusCodeRequest {
 message ListStatusCodeRequest { }
 
 message ListStatusCodeResponse {
-  repeated StatusCode status_code = 1;
+  uint32              total_count = 1;
+  repeated StatusCode status_codes = 2;
 }
 
 message DeleteStatusCodeRequest {
