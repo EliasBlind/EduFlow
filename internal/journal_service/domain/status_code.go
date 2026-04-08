@@ -1,15 +1,15 @@
 package domain
 
-// Все ID uuid7
+import "github.com/google/uuid"
 
 type StatusCode struct {
-	ID       ID
-	FullName string
+	ID       uuid.UUID `validate:"is_uuid7"`
+	FullName string    `validate:"required"`
 }
 
 type UpdateStatusCode struct {
-	ID       ID
-	FullName string
+	ID       uuid.UUID `validate:"is_uuid7"`
+	FullName string    `validate:"required"`
 }
 
 type ListStatusCode struct {

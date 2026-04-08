@@ -1,63 +1,27 @@
 package domain
 
-import (
-	"errors"
-	"time"
-)
-
-// Все ID uuid7
+import "github.com/google/uuid"
 
 type CreateClass struct {
-	ClassName string
+	ClassName string `validate:"required"`
 	// Лет обучается
 	YearOfStudy uint32
 	// Год окончания, если не установлен то будет по считан:
 	// year_of_study + текущий год
-	GraduationYear *uint32
-}
-
-func (cc *CreateClass) Validate() error {
-	if cc.ClassName == "" {
-		return errors.New("The class name cannot be empty.")
-	}
-
-	if cc.GraduationYear != nil && *cc.GraduationYear <= uint32(time.Now().Year()) {
-		return errors.New("Not a possible graduation year")
-	}
-	return nil
+	GraduationYear *uint32 `validate:"omitempty,year_gte_now"`
 }
 
 type Class struct {
-	ID             ID
-	ClassName      string
+	ID             uuid.UUID `validate:"is_uuid7"`
+	ClassName      string    `validate:"required"`
 	YearOfStudy    uint32
-	GraduationYear uint32
-}
-
-func (c *Class) Validate() error {
-	if err := c.ID.Validate(); err != nil {
-		return err
-	}
-	if c.ClassName == "" {
-		return errors.New("The class name cannot be empty.")
-	}
-	if c.GraduationYear <= uint32(time.Now().Year()) {
-		return errors.New("Not a possible graduation year")
-	}
-	return nil
+	GraduationYear uint32 `validate:"omitempty,year_gte_now"`
 }
 
 type ListTeacherClasses struct {
-	TeacherID ID
+	TeacherID uuid.UUID `validate:"is_uuid7"`
 	Limit     uint32
 	Offset    uint32
-}
-
-func (ltc *ListTeacherClasses) Validate() error {
-	if err := ltc.TeacherID.Validate(); err != nil {
-		return err
-	}
-	return nil
 }
 
 type ListClasses struct {
@@ -66,8 +30,8 @@ type ListClasses struct {
 }
 
 type UpdateClass struct {
-	ID             ID
-	ClassName      *string
+	ID             uuid.UUID `validate:"is_uuid7"`
+	ClassName      *string   `validate:"omitempty,required"`
 	YearOfStudy    *uint32
-	GraduationYear *uint32
+	GraduationYear *uint32 `validate:"omitempty,year_gte_now"`
 }

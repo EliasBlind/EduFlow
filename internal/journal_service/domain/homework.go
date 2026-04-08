@@ -1,48 +1,53 @@
 package domain
 
-import "time"
+import (
+	"time"
 
-// Все ID uuid7
+	"github.com/google/uuid"
+)
 
 type RecordHomework struct {
-	TeacherID       ID
-	ClassID         ID
-	SubjectID       ID
-	DescriptionTask string
+	TeacherID       uuid.UUID `validate:"is_uuid7"`
+	ClassID         uuid.UUID `validate:"is_uuid7"`
+	SubjectID       uuid.UUID `validate:"is_uuid7"`
+	DescriptionTask string    `validate:"required"`
 
 	// Данные ниже могут быть nil (optional)
-	Start *time.Time
-	End   *time.Time
+	Start *time.Time `validate:"omitempty"`
+	End   *time.Time `validate:"omitempty,gtfield=Start"`
 }
 
 type Homework struct {
-	ID              ID
-	ClassID         ID
-	TeacherID       ID
-	SubjectID       ID
-	DescriptionTask string
+	ID              uuid.UUID `validate:"is_uuid7"`
+	ClassID         uuid.UUID `validate:"is_uuid7"`
+	TeacherID       uuid.UUID `validate:"is_uuid7"`
+	SubjectID       uuid.UUID `validate:"is_uuid7"`
+	DescriptionTask string    `validate:"required, min=1"`
 
 	// Данные ниже могут быть nil (optional)
-	Start *time.Time
-	End   *time.Time
+
+	Start *time.Time `validate:"omitempty"`
+	End   *time.Time `validate:"omitempty,gtfield=Start"`
 }
 
 type UpdateHomework struct {
-	ID              ID
-	DescriptionTask string
+	ID              uuid.UUID `validate:"is_uuid7"`
+	DescriptionTask *string   `validate:"omitempty,min=1"`
 
 	// Данные ниже могут быть nil (optional)
-	Start *time.Time
-	End   *time.Time
+
+	Start *time.Time `validate:"omitempty"`
+	End   *time.Time `validate:"omitempty,gtfield=Start"`
 }
 
 type ListHomeworkRequest struct {
-	ClassID   ID
-	SubjectID ID
+	ClassID   uuid.UUID `validate:"is_uuid7"`
+	SubjectID uuid.UUID `validate:"is_uuid7"`
 
 	// Данные ниже могут быть nil (optional)
-	Start *time.Time
-	End   *time.Time
+
+	Start *time.Time `validate:"omitempty"`
+	End   *time.Time `validate:"omitempty,gtfield=Start"`
 }
 
 type ListHomeworkResponse struct {

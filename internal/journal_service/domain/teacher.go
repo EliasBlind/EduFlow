@@ -1,9 +1,9 @@
 package domain
 
-// Все ID uuid7
+import "github.com/google/uuid"
 
 type Teacher struct {
-	ID       ID
+	ID       uuid.UUID `validate:"is_uuid7"`
 	FullName string
 }
 
@@ -18,6 +18,6 @@ type ListTeachersResponse struct {
 }
 
 type UpdateTeacher struct {
-	ID       ID
-	FullName string
+	ID       uuid.UUID `validate:"is_uuid7"`
+	FullName string    `validate:"required"`
 }
