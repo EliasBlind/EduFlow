@@ -303,8 +303,8 @@ message Homework {
 }
 
 message UpdateHomeworkRequest {
-  string                        id               = 1; // uuid7
-  string                        description_task = 2;
+  string                             id               = 1; // uuid7
+  optional string                    description_task = 2;
   optional google.protobuf.Timestamp start            = 3;
   optional google.protobuf.Timestamp end              = 4;
 }
@@ -371,14 +371,14 @@ service TeachingLoadService {
   // Назначение вести предмет учителю для конкретного класса
   rpc CreateTeachingLoad(CreateTeachingLoadRequest) returns (TeachingLoad);
 
-  // Замена преподавателя для предмета
-  rpc UpdateTeachingLoad(UpdateTeachingLoadRequest) returns (TeachingLoad);
+  // Получение конкретного назначение
+  rpc GetTeachingLoad(GetTeachingLoadRequest) returns (TeachingLoad);
 
   // Получить список всех распределений нагрузки
   rpc ListTeachingLoad(ListTeachingLoadRequest) returns (ListTeachingLoadResponse);
 
-  // Получение конкретного назначение
-  rpc GetTeachingLoad(GetTeachingLoadRequest) returns (TeachingLoad);
+  // Замена преподавателя для предмета
+  rpc UpdateTeachingLoad(UpdateTeachingLoadRequest) returns (TeachingLoad);
 
   // Удалить запись о нагрузке
   rpc DeleteTeachingLoad(DeleteTeachingLoadRequest) returns (google.protobuf.Empty);
