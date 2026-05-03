@@ -2,7 +2,6 @@ package statuscode
 
 import (
 	"context"
-	"log/slog"
 
 	"github.com/EliasBlind/EduFlow/internal/journal_service/domain"
 	"github.com/EliasBlind/EduFlow/internal/journal_service/mapper"
@@ -25,15 +24,13 @@ type StatusCodes interface {
 type serverAPI struct {
 	journalv1.UnimplementedStatusCodeServiceServer
 	statusCodes StatusCodes
-	log         *slog.Logger
 }
 
-func Register(gRPC *grpc.Server, logger *slog.Logger, statusCodes StatusCodes) {
+func Register(gRPC *grpc.Server, statusCodes StatusCodes) {
 	journalv1.RegisterStatusCodeServiceServer(
 		gRPC,
 		&serverAPI{
 			statusCodes: statusCodes,
-			log:         logger,
 		},
 	)
 }

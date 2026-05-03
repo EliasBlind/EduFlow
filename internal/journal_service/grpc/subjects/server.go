@@ -2,7 +2,6 @@ package subjects
 
 import (
 	"context"
-	"log/slog"
 
 	"github.com/EliasBlind/EduFlow/internal/journal_service/domain"
 	"github.com/EliasBlind/EduFlow/internal/journal_service/mapper"
@@ -21,17 +20,15 @@ type Subjects interface {
 }
 
 type serverAPI struct {
-	journalv1.UnimplementedHomeworkServiceServer
+	journalv1.UnimplementedSubjectServiceServer
 	subjects Subjects
-	log      *slog.Logger
 }
 
-func Register(gRPC *grpc.Server, logger *slog.Logger, subjects Subjects) {
-	journalv1.RegisterHomeworkServiceServer(
+func Register(gRPC *grpc.Server, subjects Subjects) {
+	journalv1.RegisterSubjectServiceServer(
 		gRPC,
 		&serverAPI{
 			subjects: subjects,
-			log:      logger,
 		},
 	)
 }

@@ -2,7 +2,6 @@ package grades
 
 import (
 	"context"
-	"log/slog"
 
 	"github.com/EliasBlind/EduFlow/internal/journal_service/domain"
 	"github.com/EliasBlind/EduFlow/internal/journal_service/mapper"
@@ -25,15 +24,13 @@ type Grades interface {
 type serverAPI struct {
 	journalv1.UnimplementedGradesServiceServer
 	grades Grades
-	log    *slog.Logger
 }
 
-func Register(gRPC *grpc.Server, logger *slog.Logger, grades Grades) {
+func Register(gRPC *grpc.Server, grades Grades) {
 	journalv1.RegisterGradesServiceServer(
 		gRPC,
 		&serverAPI{
 			grades: grades,
-			log:    logger,
 		},
 	)
 }
@@ -82,7 +79,7 @@ func (s *serverAPI) DeleteGrade(ctx context.Context, req *journalv1.DeleteGradeR
 	if err != nil {
 		return nil, err
 	}
-	
+
 	err = s.grades.DeleteGrade(ctx, id)
 	if err != nil {
 		return nil, err

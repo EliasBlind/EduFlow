@@ -2,7 +2,6 @@ package teachingload
 
 import (
 	"context"
-	"log/slog"
 
 	"github.com/EliasBlind/EduFlow/internal/journal_service/domain"
 	"github.com/EliasBlind/EduFlow/internal/journal_service/mapper"
@@ -25,17 +24,15 @@ type TeachingLoad interface {
 }
 
 type serverAPI struct {
-	journalv1.UnimplementedHomeworkServiceServer
+	journalv1.UnimplementedTeachingLoadServiceServer
 	teachingLoad TeachingLoad
-	log          *slog.Logger
 }
 
-func Register(gRPC *grpc.Server, logger *slog.Logger, teachingLoad TeachingLoad) {
-	journalv1.RegisterHomeworkServiceServer(
+func Register(gRPC *grpc.Server, teachingLoad TeachingLoad) {
+	journalv1.RegisterTeachingLoadServiceServer(
 		gRPC,
 		&serverAPI{
 			teachingLoad: teachingLoad,
-			log:          logger,
 		},
 	)
 }

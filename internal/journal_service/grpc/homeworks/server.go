@@ -2,7 +2,6 @@ package homeworks
 
 import (
 	"context"
-	"log/slog"
 
 	"github.com/EliasBlind/EduFlow/internal/journal_service/domain"
 	"github.com/EliasBlind/EduFlow/internal/journal_service/mapper"
@@ -25,15 +24,13 @@ type Homeworks interface {
 type serverAPI struct {
 	journalv1.UnimplementedHomeworkServiceServer
 	homeworks Homeworks
-	log       *slog.Logger
 }
 
-func Register(gRPC *grpc.Server, logger *slog.Logger, homeworks Homeworks) {
+func Register(gRPC *grpc.Server, homeworks Homeworks) {
 	journalv1.RegisterHomeworkServiceServer(
 		gRPC,
 		&serverAPI{
 			homeworks: homeworks,
-			log:       logger,
 		},
 	)
 }

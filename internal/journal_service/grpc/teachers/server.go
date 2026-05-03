@@ -2,7 +2,6 @@ package teachers
 
 import (
 	"context"
-	"log/slog"
 
 	"github.com/EliasBlind/EduFlow/internal/journal_service/domain"
 	"github.com/EliasBlind/EduFlow/internal/journal_service/mapper"
@@ -23,17 +22,15 @@ type Teachers interface {
 }
 
 type serverAPI struct {
-	journalv1.UnimplementedHomeworkServiceServer
+	journalv1.UnimplementedTeacherServiceServer
 	teachers Teachers
-	log      *slog.Logger
 }
 
-func Register(gRPC *grpc.Server, logger *slog.Logger, teachers Teachers) {
-	journalv1.RegisterHomeworkServiceServer(
+func Register(gRPC *grpc.Server, teachers Teachers) {
+	journalv1.RegisterTeacherServiceServer(
 		gRPC,
 		&serverAPI{
 			teachers: teachers,
-			log:      logger,
 		},
 	)
 }

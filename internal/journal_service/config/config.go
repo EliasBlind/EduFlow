@@ -6,21 +6,14 @@ import (
 	"path/filepath"
 	"time"
 
+	envutil "github.com/EliasBlind/EduFlow/pkg/env"
 	"github.com/go-playground/validator/v10"
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/joho/godotenv"
 )
 
-type Env string
-
-const (
-	EnvLocal Env = "local"
-	EnvDev   Env = "dev"
-	EnvProd  Env = "prod"
-)
-
 type Config struct {
-	Env     Env           `yaml:"env" env-default:"local" validate:"required,oneof=local dev prod"`
+	Env     envutil.Env   `yaml:"env" env-default:"local" validate:"required,oneof=local dev prod"`
 	Storage StorageConfig `yaml:"storage" validate:"required"`
 	GRPC    GRPCConfig    `yaml:"grpc" validate:"required"`
 }
@@ -36,58 +29,74 @@ type StorageConfig struct {
 }
 
 type GRPCConfig struct {
-	Host    string        `yaml:"host" validate:"required"`
-	Port    int           `yaml:"port" validate:"required,gte=1,lte=65535"`
-	Timeout time.Duration `yaml:"timeout" env-default:"5s"`
+	SecretKey string        `env:"SECRET_KEY"`
+	Host      string        `yaml:"host" validate:"required"`
+	Port      int           `yaml:"port" validate:"required,gte=1,lte=65535"`
+	Timeout   time.Duration `yaml:"timeout" env-default:"5s"`
 }
 
-func (e Env) IsLocal() bool { return e == EnvLocal }
-func (e Env) IsDev() bool   { return e == EnvDev }
-func (e Env) IsProd() bool  { return e == EnvProd }
-
 func MustLoad() *Config {
-	godotenv.Load()
+	envPathStr, configPathStr := fetchPaths()
+
+	envFile, err := envutil.LoadEnv(envPathStr)
+	if err != nil {
+		panic("failed to load env: " + err.Error())
+	}
+
+	godotenv.Load(envFile.Path())
 
 	var cfg Config
-	path := fetchConfigPath()
-	if err := cleanenv.ReadConfig(path, &cfg); err != nil {
+	if err := cleanenv.ReadConfig(configPathStr, &cfg); err != nil {
 		panic("failed to read config: " + err.Error())
 	}
-	cfg.validateConfigDate()
+
+	cfg.mustValidateConfigDate()
+
 	return &cfg
 }
 
-// Получение пути к файлу конфигурации через флаг,
+// Получение пути к файлу конфигурации и env через флаг,
 // через переменные окружения или через стандартный путь
 // Приоритет: flag > env > default
-func fetchConfigPath() string {
-	var res string
+func fetchPaths() (string, string) {
+	var envPath string
+	var configPath string
 
-	// --config="path/to/config.yaml"
-	fs := flag.NewFlagSet("config", flag.ContinueOnError)
-	fs.StringVar(&res, "config", "", "path to config file")
-	fs.Parse(os.Args[1:])
+	fs := flag.NewFlagSet("app", flag.ContinueOnError)
+	fs.StringVar(&envPath, "env", "", "path to .env file")
+	fs.StringVar(&configPath, "config", "", "path to config file")
 
-	if res == "" {
-		res = os.Getenv("JOURNAL_CONFIG_PATH")
+	err := fs.Parse(os.Args[1:])
+	if err != nil {
+		panic(err)
 	}
 
-	if res == "" {
-		res = "configs/journal_service/config.yaml"
+	if envPath == "" {
+		envPath = os.Getenv("JOURNAL_ENV_PATH")
 	}
 
-	ext := filepath.Ext(res)
-	if ext != ".yaml" && ext != ".yml" {
-		panic("invalid extension: " + res)
+	if envPath == "" {
+		envPath = "configs/journal_service/journal.env"
 	}
 
-	if _, err := os.Stat(res); os.IsNotExist(err) {
-		panic("config file is not exist: " + res)
+	if configPath == "" {
+		configPath = os.Getenv("JOURNAL_CONFIG_PATH")
 	}
-	return res
+	if configPath == "" {
+		configPath = "configs/journal_service/config.yaml"
+	}
+
+	if filepath.Ext(envPath) != ".env" {
+		panic("invalid env extension: " + envPath)
+	}
+	if ext := filepath.Ext(configPath); ext != ".yaml" && ext != ".yml" {
+		panic("invalid config extension: " + configPath)
+	}
+
+	return envPath, configPath
 }
 
-func (cfg *Config) validateConfigDate() {
+func (cfg *Config) mustValidateConfigDate() {
 	validate := validator.New()
 	if err := validate.Struct(cfg); err != nil {
 		panic("error config validate: " + err.Error())
@@ -99,5 +108,9 @@ func (cfg *Config) validateConfigDate() {
 
 	if cfg.Env.IsProd() && cfg.GRPC.Timeout <= 1*time.Second {
 		panic("grpc timeout is too short (min 1s)")
+	}
+
+	if cfg.GRPC.SecretKey == "" {
+		panic("SECRET_KEY is empty")
 	}
 }

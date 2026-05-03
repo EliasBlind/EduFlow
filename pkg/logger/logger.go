@@ -4,14 +4,14 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/EliasBlind/EduFlow/internal/journal_service/config"
+	envutil "github.com/EliasBlind/EduFlow/pkg/env"
 )
 
-func MustLoad(env config.Env) *slog.Logger {
+func MustLoad(env envutil.Env) *slog.Logger {
 	var log *slog.Logger
 
 	switch env {
-	case config.EnvLocal:
+	case envutil.EnvLocal:
 		log = slog.New(
 			slog.NewTextHandler(
 				os.Stdout,
@@ -19,7 +19,7 @@ func MustLoad(env config.Env) *slog.Logger {
 			),
 		)
 
-	case config.EnvDev:
+	case envutil.EnvDev:
 		log = slog.New(
 			slog.NewJSONHandler(
 				os.Stdout,
@@ -27,7 +27,7 @@ func MustLoad(env config.Env) *slog.Logger {
 			),
 		)
 
-	case config.EnvProd:
+	case envutil.EnvProd:
 		log = slog.New(
 			slog.NewJSONHandler(
 				os.Stdout,

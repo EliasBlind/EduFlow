@@ -2,7 +2,6 @@ package students
 
 import (
 	"context"
-	"log/slog"
 
 	"github.com/EliasBlind/EduFlow/internal/journal_service/domain"
 	"github.com/EliasBlind/EduFlow/internal/journal_service/mapper"
@@ -25,17 +24,15 @@ type Students interface {
 }
 
 type serverAPI struct {
-	journalv1.UnimplementedHomeworkServiceServer
+	journalv1.UnimplementedStudentServiceServer
 	students Students
-	log      *slog.Logger
 }
 
-func Register(gRPC *grpc.Server, logger *slog.Logger, students Students) {
-	journalv1.RegisterHomeworkServiceServer(
+func Register(gRPC *grpc.Server, students Students) {
+	journalv1.RegisterStudentServiceServer(
 		gRPC,
 		&serverAPI{
 			students: students,
-			log:      logger,
 		},
 	)
 }
@@ -53,13 +50,13 @@ func (s *serverAPI) CreateStudent(ctx context.Context, req *journalv1.CreateStud
 	return mapper.StudentToProto(student), nil
 }
 
-func (s *serverAPI) GetStudent(ctx context.Context, req *journalv1.StatusCode) (*journalv1.Student, error) {
-	id, err := uuid.Parse(req.Id)
+func (s *serverAPI) GetStudent(ctx context.Context, req *journalv1.GetStudentRequest) (*journalv1.Student, error) {
+	studentId, err := uuid.Parse(req.StudentId)
 	if err != nil {
 		return nil, err
 	}
 
-	student, err := s.students.GetStudent(ctx, id)
+	student, err := s.students.GetStudent(ctx, studentId)
 	if err != nil {
 		return nil, err
 	}

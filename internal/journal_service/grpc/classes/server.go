@@ -2,7 +2,6 @@ package classes
 
 import (
 	"context"
-	"log/slog"
 
 	"github.com/EliasBlind/EduFlow/internal/journal_service/domain"
 	"github.com/EliasBlind/EduFlow/internal/journal_service/mapper"
@@ -27,15 +26,13 @@ type Classes interface {
 type serverAPI struct {
 	journalv1.UnimplementedClassesServiceServer
 	classes Classes
-	log     *slog.Logger
 }
 
-func Register(gRPC *grpc.Server, logger *slog.Logger, classes Classes) {
+func Register(gRPC *grpc.Server, classes Classes) {
 	journalv1.RegisterClassesServiceServer(
 		gRPC,
 		&serverAPI{
 			classes: classes,
-			log:     logger,
 		},
 	)
 }

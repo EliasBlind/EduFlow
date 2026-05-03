@@ -1,27 +1,23 @@
 package main
 
 import (
+	"github.com/EliasBlind/EduFlow/internal/journal_service/app"
 	"github.com/EliasBlind/EduFlow/internal/journal_service/config"
-	"github.com/EliasBlind/EduFlow/internal/journal_service/logger"
-	"github.com/EliasBlind/EduFlow/internal/journal_service/validator"
-	"github.com/EliasBlind/EduFlow/pkg/interceptors"
-	"google.golang.org/grpc"
+	envutil "github.com/EliasBlind/EduFlow/pkg/env"
+	"github.com/EliasBlind/EduFlow/pkg/logger"
+	"github.com/EliasBlind/EduFlow/pkg/validator"
 )
 
 func main() {
 	cfg := config.MustLoad()
 	val := validator.New()
 
-	log := logger.MustLoad(config.EnvDev)
+	log := logger.MustLoad(envutil.EnvDev)
 
 	log.Info("start application")
 
-	// TODO: init app
+	application := app.New(log, cfg)
+	application.GRPCService.MustRun()
 
-	gRPCServer := grpc.NewServer(
-		grpc.UnaryInterceptor(interceptors.UnaryServerInterceptor(log)),
-	)
-	_ = cfg
 	_ = val
-	_ = gRPCServer
 }

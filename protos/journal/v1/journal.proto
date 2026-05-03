@@ -215,8 +215,8 @@ service GradesService {
 }
 
 message RecordGradeRequest {
-  string                        subject_id    = 1; // uuid7
-  string                        student_id    = 2; // uuid7
+  string                             subject_id    = 1; // uuid7
+  string                             student_id    = 2; // uuid7
   optional google.protobuf.Timestamp date_of_grade = 3;
   oneof filter {
     uint32 grade          = 4;
@@ -227,10 +227,10 @@ message RecordGradeRequest {
 }
 
 message Grade {
-  string               id            = 1; // uuid7
-  string               subject_id    = 2; // uuid7
-  string               student_id    = 3; // uuid7
-  string               class_id      = 4; // uuid7
+  string                    id            = 1; // uuid7
+  string                    subject_id    = 2; // uuid7
+  string                    student_id    = 3; // uuid7
+  string                    class_id      = 4; // uuid7
   google.protobuf.Timestamp date_of_grade = 5;
   oneof filter {
     uint32 grade          = 6;
