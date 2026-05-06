@@ -19,6 +19,7 @@ type Config struct {
 	Redis       RedisConfig       `yaml:"redis" validate:"required"`
 	Mailtrap    MailtrapConfig    `yaml:"mailtrap" validate:"required"`
 	Token       TokenConfig       `yaml:"token" validate:"required"`
+	Locale      LocaleConfig      `yaml:"locale" validate:"required"`
 }
 
 type PostgresSqlConfig struct {
@@ -58,6 +59,11 @@ type TokenConfig struct {
 	AccessTokenTTL  time.Duration `yaml:"access_ttl"`
 	RefreshTokenTTL time.Duration `yaml:"refresh_ttl"`
 	VerificationTTL time.Duration `yaml:"verification_ttl"`
+}
+
+type LocaleConfig struct {
+	DefaultLang string `yaml:"default_lang"`
+	Path        string `yaml:"path"`
 }
 
 func MustLoad() *Config {

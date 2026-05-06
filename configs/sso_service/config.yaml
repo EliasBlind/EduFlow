@@ -29,3 +29,7 @@ token:
   access_ttl: 90m
   refresh_ttl: 720h
   verification_ttl: 3m
+
+locale:
+  default_lang: en
+  path: "internal/sso_service/locales"

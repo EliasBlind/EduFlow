@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/EliasBlind/EduFlow/internal/sso_service/config"
-	"github.com/EliasBlind/EduFlow/internal/sso_service/service/auth"
+	"github.com/EliasBlind/EduFlow/internal/sso_service/domain"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -77,7 +77,7 @@ func (s *Storage) Get(ctx context.Context, key string) ([]byte, error) {
 	value, err := s.client.Get(ctx, key).Bytes()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
-			return nil, fmt.Errorf("%s: %w", op, auth.ErrNotFound)
+			return nil, domain.ErrCodeNotFound
 		}
 		log.Error("failed to get value from redis", "error", err)
 		return nil, fmt.Errorf("%s: %w", op, err)
@@ -92,7 +92,7 @@ func (s *Storage) Del(ctx context.Context, key string) error {
 		"op", op,
 		"key", key,
 	)
-	
+
 	err := s.client.Del(ctx, key).Err()
 	if err != nil {
 		log.Error("failed to delete key from redis", slog.Any("err", err))

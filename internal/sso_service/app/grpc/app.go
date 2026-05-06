@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net"
+	"os"
 
 	"github.com/EliasBlind/EduFlow/internal/sso_service/config"
 	authGrpc "github.com/EliasBlind/EduFlow/internal/sso_service/grpc/auth"
@@ -11,6 +12,7 @@ import (
 	authService "github.com/EliasBlind/EduFlow/internal/sso_service/service/auth"
 	postgres "github.com/EliasBlind/EduFlow/internal/sso_service/storage/postgresql"
 	"github.com/EliasBlind/EduFlow/internal/sso_service/storage/redis"
+	"github.com/EliasBlind/EduFlow/pkg/i18n"
 	"github.com/go-playground/validator/v10"
 	"google.golang.org/grpc"
 )
@@ -30,7 +32,15 @@ func New(
 	mailer *mailer.Mailer,
 ) *App {
 
-	gRPCServer := grpc.NewServer()
+	fds := os.DirFS(".")
+	trans, err := i18n.NewTranslator(fds, cfg.Locale.Path, cfg.Locale.DefaultLang)
+	if err != nil {
+		panic(err)
+	}
+
+	gRPCServer := grpc.NewServer(
+		grpc.UnaryInterceptor(ErrorInterceptor(trans)),
+	)
 
 	authServ := authService.New(
 		log,

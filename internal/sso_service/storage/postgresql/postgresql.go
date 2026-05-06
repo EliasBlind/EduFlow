@@ -10,7 +10,6 @@ import (
 
 	"github.com/EliasBlind/EduFlow/internal/sso_service/config"
 	"github.com/EliasBlind/EduFlow/internal/sso_service/domain"
-	"github.com/EliasBlind/EduFlow/internal/sso_service/service/auth"
 	"github.com/EliasBlind/EduFlow/internal/sso_service/storage/sqlgen"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -89,7 +88,7 @@ func (s *Storage) CreateUser(ctx context.Context, params *domain.User) (uuid.UUI
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == "23505" { // Unique violation
 				log.Warn("user already exists", "error", err)
-				return uuid.Nil, fmt.Errorf("%s: %w", op, auth.ErrExists)
+				return uuid.Nil, domain.ErrUserAlreadyExists
 			}
 		}
 		log.Error("failed to create person in database", "error", err)
@@ -130,7 +129,7 @@ func (s *Storage) GetPersonByLogin(ctx context.Context, login string) (*domain.U
 
 	return &domain.User{
 		Id:           uid,
-		Email: person.Email,
+		Email:        person.Email,
 		Login:        person.Username,
 		PasswordHash: person.PasswordHash,
 		Role:         &person.UserRole,

@@ -95,13 +95,16 @@ storage-passwd-gen: build-envgen
 	@$(ENVGEN) -env="$(Env)" -key="STORAGE_PASSWORD" -sed="$(Passwd)" -gen="db"
 	@echo "Password updated in $(Env)"
 
-sso-gen: build-envgen
+sso-gen: update_proto build-envgen
 	@$(ENVGEN) -env="configs/sso_service/sso.env" -key="$(KEY)" -sed="$(SED)" -gen="$(GEN)"
 	@echo "SSO variable $(KEY) updated"
 
-journal-gen: build-envgen
+journal-gen: update_proto build-envgen
 	@$(ENVGEN) -env="configs/journal_service/journal.env" -key="$(KEY)" -sed="$(SED)" -gen="$(GEN)"
 	@echo "Journal variable $(KEY) updated"
+
+update_proto:
+	git submodule update --remote --merge protos
 
 ## test: Run all tests in the project
 test:

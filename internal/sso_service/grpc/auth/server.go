@@ -6,13 +6,12 @@ import (
 	"github.com/EliasBlind/EduFlow/internal/sso_service/domain"
 	"github.com/EliasBlind/EduFlow/internal/sso_service/mapper"
 	ssov1 "github.com/EliasBlind/EduFlow/pkg/protos/gen/sso/v1"
-	"github.com/google/uuid"
 	"google.golang.org/grpc"
 )
 
 type Auth interface {
 	Register(ctx context.Context, params *domain.RegisterRequest) error
-	VerifyEmail(ctx context.Context, params *domain.VerifyRequest) (*uuid.UUID, error)
+	VerifyEmail(ctx context.Context, params *domain.VerifyRequest) (*domain.TokenPair, error)
 	Login(ctx context.Context, params *domain.LoginRequest) (*domain.TokenPair, error)
 	Logout(ctx context.Context, refreshToken string) (bool, error)
 	RefreshToken(ctx context.Context, params *domain.RefreshRequest) (*domain.TokenPair, error)
@@ -42,13 +41,13 @@ func (s *serverAPI) Register(ctx context.Context, req *ssov1.RegisterRequest) (*
 	return &ssov1.RegisterResponse{}, nil
 }
 
-func (s *serverAPI) VerifyEmail(ctx context.Context, req *ssov1.VerifyRequest) (*ssov1.VerifyResponse, error) {
+func (s *serverAPI) VerifyEmail(ctx context.Context, req *ssov1.VerifyRequest) (*ssov1.TokenPair, error) {
 	param := mapper.VerifyEmailToDomain(req)
-	id, err := s.auth.VerifyEmail(ctx, param)
+	token, err := s.auth.VerifyEmail(ctx, param)
 	if err != nil {
 		return nil, err
 	}
-	return &ssov1.VerifyResponse{Id: id.String()}, nil
+	return mapper.TokenPairToProto(token), nil
 }
 
 func (s *serverAPI) Login(ctx context.Context, req *ssov1.LoginRequest) (*ssov1.TokenPair, error) {
