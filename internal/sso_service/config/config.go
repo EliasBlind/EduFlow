@@ -13,21 +13,23 @@ import (
 )
 
 type Config struct {
-	Env         envutil.Env       `yaml:"env" env-default:"local" validate:"required,oneof=local dev prod"`
-	PostgresSql PostgresSqlConfig `yaml:"postgres" validate:"required"`
-	GRPC        GRPCConfig        `yaml:"grpc" validate:"required"`
-	Redis       RedisConfig       `yaml:"redis" validate:"required"`
-	Mailtrap    MailtrapConfig    `yaml:"mailtrap" validate:"required"`
-	Token       TokenConfig       `yaml:"token" validate:"required"`
-	Locale      LocaleConfig      `yaml:"locale" validate:"required"`
+	Env         envutil.Env      `yaml:"env" env-default:"local" validate:"required,oneof=local dev prod"`
+	PostgresSql PostgresqlConfig `yaml:"postgres" validate:"required"`
+	GRPC        GRPCConfig       `yaml:"grpc" validate:"required"`
+	Redis       RedisConfig      `yaml:"redis" validate:"required"`
+	Mailtrap    MailtrapConfig   `yaml:"mailtrap" validate:"required"`
+	SpiceDB     SpiceConfig      `yaml:"spice" validate:"required"`
+	Token       TokenConfig      `yaml:"token" validate:"required"`
+	Locale      LocaleConfig     `yaml:"locale" validate:"required"`
+	Journal     JournalConfig    `yaml:"journal"`
 }
 
-type PostgresSqlConfig struct {
+type PostgresqlConfig struct {
 	Host         string `yaml:"host" validate:"required,hostname_rfc1123|ip"`
-	Port         int    `yaml:"port" validate:"required,gte=1,lte=65535"`
-	User         string `yaml:"user" validate:"required"`
-	Password     string `env:"STORAGE_PASSWORD" env-required:"true"`
-	DBName       string `yaml:"db_name" validate:"required"`
+	Port         int    `env:"POSTGRES_PORT" env-required:"true"`
+	User         string `env:"POSTGRES_USER" env-required:"true"`
+	Password     string `env:"POSTGRES_PASSWORD" env-required:"true"`
+	DBName       string `env:"POSTGRES_DB_NAME" env-required:"true"`
 	Sslmode      string `yaml:"sslmode" validate:"oneof=disable enable verify-full"`
 	MaxOpenConns int    `yaml:"max_open_conns" validate:"required,min=1"`
 }
@@ -40,18 +42,26 @@ type GRPCConfig struct {
 
 type RedisConfig struct {
 	Host     string `yaml:"host" validate:"required"`
-	Port     int    `yaml:"port" validate:"required,gte=1,lte=65535"`
+	Port     int    `env:"REDIS_PORT" env-required:"true"`
+	Password string `env:"REDIS_PASSWORD" env-required:"true"`
 	Db       int    `yaml:"db"`
-	Password string `env:"REDIS_PASSWORD"`
 }
 
 type MailtrapConfig struct {
 	Host        string `yaml:"host" validate:"required"`
-	Port        int    `yaml:"port" validate:"required,gte=1,lte=65535"`
+	Port        int    `env:"MAILTRAP_PORT" env-required:"true"`
 	Username    string `yaml:"username"`
 	Password    string `env:"MAILTRAP_PASSWORD"`
 	SenderEmail string `yaml:"sender_email" validate:"required,email"`
 	UseTls      bool   `yaml:"use_tls"`
+}
+
+type SpiceConfig struct {
+	Host     string        `yaml:"host" validate:"required"`
+	Port     int           `env:"SPICEDB_PORT_F" env-required:"true"`
+	Password string        `env:"SPICEDB_PASSWORD"`
+	UseSSL   bool          `yaml:"use_ssl"`
+	Timeout  time.Duration `yaml:"timeout"`
 }
 
 type TokenConfig struct {
@@ -64,6 +74,11 @@ type TokenConfig struct {
 type LocaleConfig struct {
 	DefaultLang string `yaml:"default_lang"`
 	Path        string `yaml:"path"`
+}
+
+type JournalConfig struct {
+	Host string `yaml:"host"`
+	Port int    `yaml:"port"`
 }
 
 func MustLoad() *Config {

@@ -2,16 +2,17 @@ package domain
 
 import (
 	"context"
-	"errors"
 
+	"github.com/EliasBlind/EduFlow/pkg/roles"
 	"github.com/google/uuid"
 )
 
 type ctxKey struct{}
 
 type UserClaims struct {
-	ID   uuid.UUID `validate:"is_uuid7"`
-	Role string    `validate:"required"`
+	ID    uuid.UUID  `validate:"required"`
+	Login string     `validate:"required"`
+	Role  roles.Role `validate:"required"`
 }
 
 func ContextWithClaims(ctx context.Context, claims *UserClaims) context.Context {
@@ -20,8 +21,8 @@ func ContextWithClaims(ctx context.Context, claims *UserClaims) context.Context 
 
 func GetUserClaims(ctx context.Context) (*UserClaims, error) {
 	claims, ok := ctx.Value(ctxKey{}).(*UserClaims)
-	if !ok {
-		return nil, errors.New("user claims not found in context")
+	if !ok || claims == nil {
+		return nil, ErrUnauthorized
 	}
 	return claims, nil
 }

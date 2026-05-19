@@ -22,10 +22,12 @@ type Querier interface {
 	GetPersonByLogin(ctx context.Context, username string) (Person, error)
 	// Проверка токена при обновлении
 	GetSessionByTokenID(ctx context.Context, tokenID []byte) (GetSessionByTokenIDRow, error)
+	ListUsers(ctx context.Context) ([]ListUsersRow, error)
 	// Сохраняет новую сессию рефреш-токена
 	SaveRefreshToken(ctx context.Context, arg SaveRefreshTokenParams) (pgtype.UUID, error)
 	// Смена пароля
 	UpdatePassword(ctx context.Context, arg UpdatePasswordParams) error
+	UpdateRole(ctx context.Context, arg UpdateRoleParams) (Person, error)
 	UserExist(ctx context.Context, username string) (bool, error)
 }
 

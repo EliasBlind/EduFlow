@@ -12,9 +12,9 @@ import (
 )
 
 type Teachers interface {
-	CreateTeacher(ctx context.Context, teacherName string) (*domain.Teacher, error)
+	CreateTeacher(ctx context.Context, params *domain.Teacher) (*domain.Teacher, error)
 
-	ListTeachers(ctx context.Context, req *domain.ListTeachersRequest) (*domain.ListTeachersResponse, error)
+	ListTeachers(ctx context.Context, req *domain.ListTeachersRequest) ([]domain.Teacher, error)
 
 	UpdateTeacher(ctx context.Context, req *domain.UpdateTeacher) (*domain.Teacher, error)
 
@@ -36,7 +36,12 @@ func Register(gRPC *grpc.Server, teachers Teachers) {
 }
 
 func (s *serverAPI) CreateTeacher(ctx context.Context, req *journalv1.CreateTeacherRequest) (*journalv1.Teacher, error) {
-	teacher, err := s.teachers.CreateTeacher(ctx, req.FullName)
+	params, err := mapper.TeacherRequestToDomain(req)
+	if err != nil {
+		return nil, err
+	}
+	
+	teacher, err := s.teachers.CreateTeacher(ctx, params)
 	if err != nil {
 		return nil, err
 	}
@@ -46,11 +51,11 @@ func (s *serverAPI) CreateTeacher(ctx context.Context, req *journalv1.CreateTeac
 func (s *serverAPI) ListTeachers(ctx context.Context, req *journalv1.ListTeachersRequest) (*journalv1.ListTeachersResponse, error) {
 	params := mapper.ListTeachersToDomain(req)
 
-	listTeachers, err := s.teachers.ListTeachers(ctx, params)
+	teachers, err := s.teachers.ListTeachers(ctx, params)
 	if err != nil {
 		return nil, err
 	}
-	return mapper.ListTeachersToProto(listTeachers), nil
+	return mapper.ListTeachersToProto(teachers), nil
 }
 
 func (s *serverAPI) UpdateTeacher(ctx context.Context, req *journalv1.UpdateTeacherRequest) (*journalv1.Teacher, error) {

@@ -35,7 +35,6 @@ WHERE id = $1
 ORDER BY id
 LIMIT 1;
 
-
 -- name: UserExist :one
 SELECT
     EXISTS(
@@ -64,16 +63,17 @@ RETURNING id;
 
 -- name: GetSessionByTokenID :one
 -- Проверка токена при обновлении
-SELECT 
-    id, 
-    user_id, 
-    app_id, 
-    token_id, 
-    expires_at 
+SELECT
+    id,
+    user_id,
+    app_id,
+    token_id,
+    expires_at
 FROM refresh_sessions
 WHERE
     token_id = $1
-    AND  expires_at > NOW()
+    AND expires_at > NOW()
+ORDER BY expires_at
 LIMIT 1;
 
 -- name: DeleteSessionByTokenID :exec
@@ -85,3 +85,18 @@ WHERE token_id = $1;
 DELETE FROM refresh_sessions
 WHERE user_id = $1;
 
+
+-- name: ListUsers :many
+SELECT
+    id,
+    email,
+    username,
+    user_role
+FROM person
+ORDER BY username;
+
+-- name: UpdateRole :one
+UPDATE person
+SET user_role = $2
+WHERE id = $1
+RETURNING id, email, username, password_hash, user_role;

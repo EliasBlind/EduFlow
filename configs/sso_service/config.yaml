@@ -1,29 +1,28 @@
 env: "local" # local, dev, prod
 
 postgres:
-  host: "localhost"
-  port: 5432
-  user: "Elias"
-  db_name: "sso_db"
+  host: "postgres"
   sslmode: "disable"
   max_open_conns: 10
 
 grpc:
-  host: "localhost"
+  host: "0.0.0.0"
   port: 4042
   timeout: 2m
 
 redis:
-  host: "localhost"
-  port: 6379
+  host: "redis"
   db: 0
 
 mailtrap:
-  host: "localhost"
-  port: 1025
-  username: ""
+  host: "mailpit"
   sender_email: "eliaseromanov@gmail.com"
   use_tls: false
+
+spice:
+  host: "localhost"
+  use_ssl: false
+  timeout: 5s  
 
 token:
   access_ttl: 90m
@@ -33,3 +32,7 @@ token:
 locale:
   default_lang: en
   path: "internal/sso_service/locales"
+
+journal:
+  host: "journal-service"
+  port: 4043

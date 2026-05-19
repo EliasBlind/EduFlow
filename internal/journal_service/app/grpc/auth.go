@@ -1,4 +1,4 @@
-package interceptors
+package grpcapp
 
 import (
 	"context"
@@ -56,7 +56,7 @@ func UnaryAuthInterceptor(parser TokenParser, log *slog.Logger) grpc.UnaryServer
 
 		log.Info("user authenticated",
 			slog.String("user_id", claims.ID.String()),
-			slog.String("role", claims.Role),
+			slog.String("role", claims.Role.String()),
 		)
 
 		newCtx := domain.ContextWithClaims(ctx, claims)

@@ -16,7 +16,7 @@ type StatusCodes interface {
 
 	UpdateStatusCode(ctx context.Context, req *domain.UpdateStatusCode) (*domain.StatusCode, error)
 
-	ListStatusCode(ctx context.Context) (*domain.ListStatusCode, error)
+	ListStatusCode(ctx context.Context) ([]domain.StatusCode, error)
 
 	DeleteStatusCode(ctx context.Context, id uuid.UUID) error
 }

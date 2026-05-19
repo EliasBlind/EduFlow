@@ -17,6 +17,8 @@ type Subjects interface {
 	UpdateSubject(ctx context.Context, req *domain.UpdateSubject) (*domain.Subject, error)
 
 	DeleteSubject(ctx context.Context, id uuid.UUID) error
+
+	ListSubjects(ctx context.Context) ( []domain.Subject, error)
 }
 
 type serverAPI struct {
@@ -68,4 +70,15 @@ func (s *serverAPI) DeleteSubject(ctx context.Context, req *journalv1.DeleteSubj
 	}
 
 	return nil, nil
+}
+
+func (s *serverAPI) ListSubjects(
+	ctx context.Context,
+	req *journalv1.ListSubjectsRequest,
+) (*journalv1.ListSubjectsResponse, error) {
+	subjects, err := s.subjects.ListSubjects(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return mapper.SubjectsToProto(subjects), nil
 }

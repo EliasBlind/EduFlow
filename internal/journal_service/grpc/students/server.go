@@ -12,11 +12,11 @@ import (
 )
 
 type Students interface {
-	CreateStudent(ctx context.Context, req *domain.CreateStudent) (*domain.Student, error)
+	CreateStudent(ctx context.Context, req *domain.Student) (*domain.Student, error)
 
 	GetStudent(ctx context.Context, studentID uuid.UUID) (*domain.Student, error)
 
-	ListStudents(ctx context.Context, req *domain.ListStudentsRequest) (*domain.ListStudentsResponse, error)
+	ListStudents(ctx context.Context, req *domain.ListStudentsRequest) ([]domain.Student, error)
 
 	UpdateStudent(ctx context.Context, req *domain.UpdateStudent) (*domain.Student, error)
 

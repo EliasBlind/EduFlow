@@ -8,6 +8,7 @@ package sqlgen
 import (
 	"context"
 
+	"github.com/EliasBlind/EduFlow/pkg/roles"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -118,14 +119,17 @@ func (q *Queries) GetPersonByLogin(ctx context.Context, username string) (Person
 }
 
 const getSessionByTokenID = `-- name: GetSessionByTokenID :one
-SELECT 
-    id, 
-    user_id, 
-    app_id, 
-    token_id, 
-    expires_at 
+SELECT
+    id,
+    user_id,
+    app_id,
+    token_id,
+    expires_at
 FROM refresh_sessions
-WHERE token_id = $1
+WHERE
+    token_id = $1
+    AND expires_at > NOW()
+ORDER BY expires_at
 LIMIT 1
 `
 
@@ -149,6 +153,48 @@ func (q *Queries) GetSessionByTokenID(ctx context.Context, tokenID []byte) (GetS
 		&i.ExpiresAt,
 	)
 	return i, err
+}
+
+const listUsers = `-- name: ListUsers :many
+SELECT
+    id,
+    email,
+    username,
+    user_role
+FROM person
+ORDER BY username
+`
+
+type ListUsersRow struct {
+	ID       pgtype.UUID `json:"id"`
+	Email    string      `json:"email"`
+	Username string      `json:"username"`
+	UserRole string      `json:"user_role"`
+}
+
+func (q *Queries) ListUsers(ctx context.Context) ([]ListUsersRow, error) {
+	rows, err := q.db.Query(ctx, listUsers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListUsersRow{}
+	for rows.Next() {
+		var i ListUsersRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Email,
+			&i.Username,
+			&i.UserRole,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const saveRefreshToken = `-- name: SaveRefreshToken :one
@@ -198,6 +244,31 @@ type UpdatePasswordParams struct {
 func (q *Queries) UpdatePassword(ctx context.Context, arg UpdatePasswordParams) error {
 	_, err := q.db.Exec(ctx, updatePassword, arg.ID, arg.PasswordHash)
 	return err
+}
+
+const updateRole = `-- name: UpdateRole :one
+UPDATE person
+SET user_role = $2
+WHERE id = $1
+RETURNING id, email, username, password_hash, user_role
+`
+
+type UpdateRoleParams struct {
+	ID       pgtype.UUID `json:"id"`
+	UserRole roles.Role      `json:"user_role"`
+}
+
+func (q *Queries) UpdateRole(ctx context.Context, arg UpdateRoleParams) (Person, error) {
+	row := q.db.QueryRow(ctx, updateRole, arg.ID, arg.UserRole)
+	var i Person
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Username,
+		&i.PasswordHash,
+		&i.UserRole,
+	)
+	return i, err
 }
 
 const userExist = `-- name: UserExist :one

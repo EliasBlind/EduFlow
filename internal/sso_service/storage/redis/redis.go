@@ -30,8 +30,9 @@ func New(
 	)
 
 	client := redis.NewClient(&redis.Options{
-		Addr: fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
-		DB:   cfg.Db,
+		Addr:     fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
+		Password: cfg.Password,
+		DB:       cfg.Db,
 	})
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

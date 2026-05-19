@@ -7,9 +7,9 @@ import (
 )
 
 type RecordHomework struct {
-	TeacherID       uuid.UUID `validate:"is_uuid7"`
-	ClassID         uuid.UUID `validate:"is_uuid7"`
-	SubjectID       uuid.UUID `validate:"is_uuid7"`
+	TeacherID       uuid.UUID `validate:"required"`
+	ClassID         uuid.UUID `validate:"required"`
+	SubjectID       uuid.UUID `validate:"required"`
 	DescriptionTask string    `validate:"required"`
 
 	// Данные ниже могут быть nil (optional)
@@ -18,10 +18,10 @@ type RecordHomework struct {
 }
 
 type Homework struct {
-	ID              uuid.UUID `validate:"is_uuid7"`
-	ClassID         uuid.UUID `validate:"is_uuid7"`
-	TeacherID       uuid.UUID `validate:"is_uuid7"`
-	SubjectID       uuid.UUID `validate:"is_uuid7"`
+	ID              uuid.UUID `validate:"required"`
+	ClassID         uuid.UUID `validate:"required"`
+	TeacherID       uuid.UUID `validate:"required"`
+	SubjectID       uuid.UUID `validate:"required"`
 	DescriptionTask string    `validate:"required, min=1"`
 
 	// Данные ниже могут быть nil (optional)
@@ -31,7 +31,7 @@ type Homework struct {
 }
 
 type UpdateHomework struct {
-	ID              uuid.UUID `validate:"is_uuid7"`
+	ID              uuid.UUID `validate:"required"`
 	DescriptionTask *string   `validate:"omitempty,min=1"`
 
 	// Данные ниже могут быть nil (optional)
@@ -41,8 +41,8 @@ type UpdateHomework struct {
 }
 
 type ListHomeworkRequest struct {
-	ClassID   uuid.UUID `validate:"is_uuid7"`
-	SubjectID uuid.UUID `validate:"is_uuid7"`
+	ClassID   uuid.UUID `validate:"required"`
+	SubjectID uuid.UUID `validate:"required"`
 
 	// Данные ниже могут быть nil (optional)
 

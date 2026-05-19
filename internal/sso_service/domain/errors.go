@@ -13,6 +13,10 @@ func (e AppError) Error() string {
 	return fmt.Sprintf("[%s] %s", e.Key, e.Message)
 }
 
+func (e AppError) TranslationKey() string {
+	return e.Key
+}
+
 func newErr(key, msg string) AppError {
 	return AppError{Key: key, Message: msg}
 }
@@ -27,9 +31,10 @@ var (
 	ErrUnauthenticated   = newErr("auth.unauthenticated", "the token is not valid or expired")
 	ErrAccessDenied      = newErr("auth.access_denied", "access denied")
 
-	ErrInvalidCode  = newErr("verify.invalid_code", "invalid verification code")
-	ErrCodeExpired  = newErr("verify.code_expired", "verification code expired")
-	ErrCodeNotFound = newErr("verify.code_not_found", "verification code not found")
+	ErrInvalidCode           = newErr("verify.invalid_code", "invalid verification code")
+	ErrCodeExpired           = newErr("verify.code_expired", "verification code expired")
+	ErrCodeNotFound          = newErr("verify.code_not_found", "verification code not found")
+	ErrTokenAudienceMismatch = newErr("auth.token_audience_mismatch", "Token audience mismatch.")
 
 	ErrStorageUnavailable = newErr("infra.storage_unavailable", "storage service unavailable")
 )

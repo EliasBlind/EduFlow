@@ -4,17 +4,85 @@ services:
     environment:
       POSTGRES_USER: Elias
       POSTGRES_PASSWORD: 2795749b040201cde46538c3b74b4d97
-      POSTGRES_DB: sso_db
+      POSTGRES_DB: edu_db
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U Elias -d edu_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   redis:
     image: redis:7-alpine
+    command: redis-server --requirepass CBx1AmUpuhAwshaFwUDpgU0M3yGnmkKGkn9q0rwbLlU=
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   mailpit:
     image: axllent/mailpit
     ports:
       - "8025:8025"
       - "1025:1025"
+
+  spicedb:
+    image: authzed/spicedb:latest
+    ports:
+      - "50051:50051"
+      - "9090:9090"
+    command: serve-testing
+    environment:
+      - SPICEDB_GRPC_PRESHARED_KEY=test
+      - SPICEDB_HTTP_ENABLED=true
+      - SPICEDB_HTTP_ADDR=:9090
+
+  envoy:
+    image: envoyproxy/envoy:v1.30-latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./envoy.yaml:/etc/envoy/envoy.yaml:ro
+    depends_on:
+      - journal-service
+      - sso-service
+
+  journal-service:
+    image: debian:stable-slim
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./.bin/journal_service:/app/journal_service:ro
+      - ./configs:/app/configs:ro
+      - ./internal:/app/internal:ro 
+    command: /app/journal_service
+    working_dir: /app
+    expose:
+      - "4043"
+
+  sso-service:
+    image: debian:stable-slim
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./.bin/sso_service:/app/sso_service:ro
+      - ./configs:/app/configs:ro
+      - ./internal:/app/internal:ro 
+    environment:
+      # Эти переменные не нужны, если код читает YAML, но оставлю для совместимости
+      REDIS_HOST: redis
+      REDIS_PASSWORD: CBx1AmUpuhAwshaFwUDpgU0M3yGnmkKGkn9q0rwbLlU=
+    command: /app/sso_service
+    working_dir: /app
+    expose:
+      - "4042"

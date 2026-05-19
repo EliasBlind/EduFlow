@@ -2,6 +2,7 @@ package mapper
 
 import (
 	"github.com/EliasBlind/EduFlow/internal/journal_service/domain"
+	pkgmapper "github.com/EliasBlind/EduFlow/pkg/mappers"
 	journalv1 "github.com/EliasBlind/EduFlow/pkg/protos/gen/journal/v1"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -17,10 +18,10 @@ func StudentToProto(params *domain.Student) *journalv1.Student {
 	}
 }
 
-func ListStudentsToProto(params *domain.ListStudentsResponse) *journalv1.ListStudentsResponse {
+func ListStudentsToProto(students []domain.Student) *journalv1.ListStudentsResponse {
 	return &journalv1.ListStudentsResponse{
-		TotalCount: params.TotalCount,
-		Students:   MapSlice(params.Students, StudentToProto),
+		TotalCount: uint32(len(students)),
+		Students:   pkgmapper.MapSlice(students, StudentToProto),
 	}
 }
 
@@ -33,10 +34,10 @@ func TeacherToProto(params *domain.Teacher) *journalv1.Teacher {
 	}
 }
 
-func ListTeachersToProto(params *domain.ListTeachersResponse) *journalv1.ListTeachersResponse {
+func ListTeachersToProto(teacher []domain.Teacher) *journalv1.ListTeachersResponse {
 	return &journalv1.ListTeachersResponse{
-		TotalCount: params.TotalCount,
-		Teachers:   MapSlice(params.Teachers, TeacherToProto),
+		TotalCount: uint32(len(teacher)),
+		Teachers:   pkgmapper.MapSlice(teacher, TeacherToProto),
 	}
 }
 
@@ -51,10 +52,10 @@ func ClassToProto(params *domain.Class) *journalv1.Class {
 	}
 }
 
-func ListTeacherClassesToProto(params *domain.ListClasses) *journalv1.ListClassesResponse {
+func ListTeacherClassesToProto(classes []domain.Class) *journalv1.ListClassesResponse {
 	return &journalv1.ListClassesResponse{
-		TotalCount: params.TotalCount,
-		Classes:    MapSlice(params.Classes, ClassToProto),
+		TotalCount: uint32(len(classes)),
+		Classes:    pkgmapper.MapSlice(classes, ClassToProto),
 	}
 }
 
@@ -99,10 +100,10 @@ func GradeToProto(params *domain.Grade) *journalv1.Grade {
 	return res
 }
 
-func ListGradesToProto(params *domain.ListGradesResponse) *journalv1.ListGradesResponse {
+func GradesToProto(grades []domain.Grade) *journalv1.ListGradesResponse {
 	return &journalv1.ListGradesResponse{
-		TotalCount: params.TotalCount,
-		Grades:     MapSlice(params.Grades, GradeToProto),
+		TotalCount: uint32(len(grades)),
+		Grades:     pkgmapper.MapSlice(grades, GradeToProto),
 	}
 }
 
@@ -121,10 +122,10 @@ func HomeworkToProto(params *domain.Homework) *journalv1.Homework {
 	}
 }
 
-func ListHomeworkToProto(params *domain.ListHomeworkResponse) *journalv1.ListHomeworkResponse {
+func ListHomeworkToProto(homeworks []domain.Homework) *journalv1.ListHomeworkResponse {
 	return &journalv1.ListHomeworkResponse{
-		TotalCount: params.TotalCount,
-		Homeworks:  MapSlice(params.Homeworks, HomeworkToProto),
+		TotalCount: uint32(len(homeworks)),
+		Homeworks:  pkgmapper.MapSlice(homeworks, HomeworkToProto),
 	}
 }
 
@@ -137,10 +138,10 @@ func StatusCodeToProto(params *domain.StatusCode) *journalv1.StatusCode {
 	}
 }
 
-func ListStatusCodeToProto(params *domain.ListStatusCode) *journalv1.ListStatusCodeResponse {
+func ListStatusCodeToProto(statusCodes []domain.StatusCode) *journalv1.ListStatusCodeResponse {
 	return &journalv1.ListStatusCodeResponse{
-		TotalCount:  params.TotalCount,
-		StatusCodes: MapSlice(params.StatusCodes, StatusCodeToProto),
+		TotalCount:  uint32(len(statusCodes)),
+		StatusCodes: pkgmapper.MapSlice(statusCodes, StatusCodeToProto),
 	}
 }
 
@@ -155,27 +156,31 @@ func TeachingLoadToProto(params *domain.TeachingLoad) *journalv1.TeachingLoad {
 	}
 }
 
-func ListTeachingLoadToProto(params *domain.ListTeachingLoadResponse) *journalv1.ListTeachingLoadResponse {
+func ListTeachingLoadToProto(teachingLoad []domain.TeachingLoad) *journalv1.ListTeachingLoadResponse {
 	return &journalv1.ListTeachingLoadResponse{
-		TotalCount:    params.TotalCount,
-		TeachingLoads: MapSlice(params.TeachingLoads, TeachingLoadToProto),
+		TotalCount:    uint32(len(teachingLoad)),
+		TeachingLoads: pkgmapper.MapSlice(teachingLoad, TeachingLoadToProto),
+	}
+}
+
+func SubjectsToProto(subjects []domain.Subject) *journalv1.ListSubjectsResponse {
+
+	res := pkgmapper.MapSlice(
+		subjects,
+		func(subject *domain.Subject) *journalv1.Subject {
+			return &journalv1.Subject{
+				Id: subject.ID.String(),
+				FullName: subject.FullName,
+			}
+		},
+	)
+	return &journalv1.ListSubjectsResponse{
+		TotalCount: uint32(len(res)),
+		Subjects: res,
 	}
 }
 
 // Support functions
-
-func MapSlice[F any, T any](items []F, mapper func(*F) T) []T {
-	if items == nil {
-		return nil
-	}
-
-	res := make([]T, len(items))
-
-	for i, v := range items {
-		res[i] = mapper(&v)
-	}
-	return res
-}
 
 func uuidPtrToString(id *uuid.UUID) *string {
 	if id == nil {

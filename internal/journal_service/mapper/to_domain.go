@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/EliasBlind/EduFlow/internal/journal_service/domain"
+	pkgmapper "github.com/EliasBlind/EduFlow/pkg/mappers"
 	journalv1 "github.com/EliasBlind/EduFlow/pkg/protos/gen/journal/v1"
 	"github.com/google/uuid"
 )
@@ -11,15 +12,23 @@ import (
 // Маппинг параметров функций (toDomain)
 
 // Студенты (Students)
-func CreateStudentToDomain(j *journalv1.CreateStudentRequest) (*domain.CreateStudent, error) {
-	classID, err := uuid.Parse(j.GetClassId())
+func CreateStudentToDomain(j *journalv1.CreateStudentRequest) (*domain.Student, error) {
+
+	id, err := pkgmapper.ToUUID(j.Id)
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrInvalidData
 	}
 
-	return &domain.CreateStudent{
+	classID, err := pkgmapper.ToUUID(j.Id)
+	if err != nil {
+		return nil, domain.ErrInvalidData
+	}
+
+	return &domain.Student{
 		// option field
-		ClassID:  &classID,
+		ID: id,
+		// option field
+		ClassID:  classID,
 		FullName: j.GetFullName(),
 	}, nil
 }
@@ -27,7 +36,7 @@ func CreateStudentToDomain(j *journalv1.CreateStudentRequest) (*domain.CreateStu
 func ListStudentsToDomain(j *journalv1.ListStudentsRequest) (*domain.ListStudentsRequest, error) {
 	classID, err := uuid.Parse(j.ClassId)
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrInvalidData
 	}
 	return &domain.ListStudentsRequest{
 		ClassID: classID,
@@ -39,22 +48,36 @@ func ListStudentsToDomain(j *journalv1.ListStudentsRequest) (*domain.ListStudent
 func UpdateStudentToDomain(j *journalv1.UpdateStudentRequest) (*domain.UpdateStudent, error) {
 	id, err := uuid.Parse(j.Id)
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrInvalidData
 	}
-	classID, err := uuid.Parse(*j.ClassId)
+
+	classID, err := pkgmapper.ToUUID(j.ClassId)
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrInvalidData
 	}
+
 	return &domain.UpdateStudent{
 		ID: id,
 
 		// option fields
-		ClassID:  &classID,
+		ClassID:  classID,
 		FullName: j.FullName,
 	}, nil
 }
 
 // Учителя (Teachers)
+func TeacherRequestToDomain(j *journalv1.CreateTeacherRequest) (*domain.Teacher, error) {
+	id, err := pkgmapper.ToUUID(j.Id)
+	if err != nil {
+		return nil, domain.ErrInvalidData
+	}
+
+	return &domain.Teacher{
+		ID:       id,
+		FullName: j.FullName,
+	}, nil
+}
+
 func ListTeachersToDomain(j *journalv1.ListTeachersRequest) *domain.ListTeachersRequest {
 	return &domain.ListTeachersRequest{
 		Limit:  j.GetLimit(),
@@ -65,7 +88,7 @@ func ListTeachersToDomain(j *journalv1.ListTeachersRequest) *domain.ListTeachers
 func UpdateTeacherToDomain(j *journalv1.UpdateTeacherRequest) (*domain.UpdateTeacher, error) {
 	id, err := uuid.Parse(j.Id)
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrInvalidData
 	}
 	return &domain.UpdateTeacher{
 		ID:       id,
@@ -87,7 +110,7 @@ func CreateClassToDomain(j *journalv1.CreateClassRequest) *domain.CreateClass {
 func ListTeacherClassesToDomain(j *journalv1.ListTeacherClassesRequest) (*domain.ListTeacherClasses, error) {
 	teacherID, err := uuid.Parse(j.TeacherId)
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrInvalidData
 	}
 	return &domain.ListTeacherClasses{
 		TeacherID: teacherID,
@@ -99,7 +122,7 @@ func ListTeacherClassesToDomain(j *journalv1.ListTeacherClassesRequest) (*domain
 func UpdateClassToDomain(j *journalv1.UpdateClassRequest) (*domain.UpdateClass, error) {
 	id, err := uuid.Parse(j.Id)
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrInvalidData
 	}
 	return &domain.UpdateClass{
 		ID: id,
@@ -115,7 +138,7 @@ func UpdateClassToDomain(j *journalv1.UpdateClassRequest) (*domain.UpdateClass, 
 func UpdateSubjectToDomain(j *journalv1.UpdateSubjectRequest) (*domain.UpdateSubject, error) {
 	id, err := uuid.Parse(j.Id)
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrInvalidData
 	}
 	return &domain.UpdateSubject{
 		ID:       id,
@@ -136,7 +159,7 @@ func RecordGradeToDomain(j *journalv1.RecordGradeRequest) (*domain.RecordGrade, 
 	case *journalv1.RecordGradeRequest_StatusCodeId:
 		sci, err := uuid.Parse(v.StatusCodeId)
 		if err != nil {
-			return nil, err
+			return nil, domain.ErrInvalidData
 		}
 		statusCodeID = ptr(sci)
 	}
@@ -147,18 +170,18 @@ func RecordGradeToDomain(j *journalv1.RecordGradeRequest) (*domain.RecordGrade, 
 		dateOfGrade = ptr(ts.AsTime())
 	}
 
-	subjectId, err := uuid.Parse(j.SubjectId)
+	tsId, err := uuid.Parse(j.GetTsId())
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrInvalidData
 	}
 
-	studentId, err := uuid.Parse(j.StudentId)
+	studentId, err := uuid.Parse(j.GetStudentId())
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrInvalidData
 	}
 
 	return &domain.RecordGrade{
-		SubjectID: subjectId,
+		TsID:      tsId,
 		StudentID: studentId,
 
 		// option field
@@ -182,14 +205,14 @@ func ListGradesToDomain(j *journalv1.ListGradesRequest) (*domain.ListGradesReque
 	case *journalv1.ListGradesRequest_StudentId:
 		sID, err := uuid.Parse(v.StudentId)
 		if err != nil {
-			return nil, err
+			return nil, domain.ErrInvalidData
 		}
 		studentID = ptr(sID)
 
 	case *journalv1.ListGradesRequest_ClassId:
 		cID, err := uuid.Parse(v.ClassId)
 		if err != nil {
-			return nil, err
+			return nil, domain.ErrInvalidData
 		}
 		classID = ptr(cID)
 	}
@@ -209,7 +232,7 @@ func ListGradesToDomain(j *journalv1.ListGradesRequest) (*domain.ListGradesReque
 	if j.SubjectId != nil {
 		sID, err := uuid.Parse(*j.SubjectId)
 		if err != nil {
-			return nil, err
+			return nil, domain.ErrInvalidData
 		}
 		subjectID = &sID
 	}
@@ -238,13 +261,13 @@ func UpdateGradeToDomain(j *journalv1.UpdateGradeRequest) (*domain.UpdateGrade, 
 		sCId, err := uuid.Parse(v.StatusCodeId)
 		statusCodeID = &sCId
 		if err != nil {
-			return nil, err
+			return nil, domain.ErrInvalidData
 		}
 	}
 
 	gradeID, err := uuid.Parse(j.GradeId)
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrInvalidData
 	}
 	return &domain.UpdateGrade{
 		GradeID: gradeID,
@@ -269,24 +292,25 @@ func RecordHomeworkToDomain(j *journalv1.RecordHomeworkRequest) (*domain.RecordH
 		end = ptr(ts.AsTime())
 	}
 
-	teacherId, err := uuid.Parse(j.TeacherId)
+	teacherId, err := uuid.Parse(j.GetTeacherId())
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrInvalidData
 	}
 
-	classId, err := uuid.Parse(j.ClassId)
+	classId, err := uuid.Parse(j.GetClassId())
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrInvalidData
 	}
 
-	subjectId, err := uuid.Parse(j.SubjectId)
+	subjectID, err := uuid.Parse(j.GetSubjectId())
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrInvalidData
 	}
+
 	return &domain.RecordHomework{
 		TeacherID:       teacherId,
 		ClassID:         classId,
-		SubjectID:       subjectId,
+		SubjectID:       subjectID,
 		DescriptionTask: j.GetDescriptionTask(),
 
 		// options fields
@@ -308,7 +332,7 @@ func UpdateHomeworkToDomain(j *journalv1.UpdateHomeworkRequest) (*domain.UpdateH
 
 	id, err := uuid.Parse(j.Id)
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrInvalidData
 	}
 
 	return &domain.UpdateHomework{
@@ -334,12 +358,12 @@ func ListHomeworkToDomain(j *journalv1.ListHomeworkRequest) (*domain.ListHomewor
 
 	classID, err := uuid.Parse(j.ClassId)
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrInvalidData
 	}
 
 	subjectID, err := uuid.Parse(j.SubjectId)
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrInvalidData
 	}
 
 	return &domain.ListHomeworkRequest{
@@ -356,7 +380,7 @@ func ListHomeworkToDomain(j *journalv1.ListHomeworkRequest) (*domain.ListHomewor
 func UpdateStatusCodeToDomain(j *journalv1.UpdateStatusCodeRequest) (*domain.UpdateStatusCode, error) {
 	id, err := uuid.Parse(j.Id)
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrInvalidData
 	}
 	return &domain.UpdateStatusCode{
 		ID:       id,
@@ -368,18 +392,18 @@ func UpdateStatusCodeToDomain(j *journalv1.UpdateStatusCodeRequest) (*domain.Upd
 func CreateTeachingLoadToDomain(j *journalv1.CreateTeachingLoadRequest) (*domain.CreateTeachingLoad, error) {
 	teacherID, err := uuid.Parse(j.TeacherId)
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrInvalidData
 	}
 
 	subjectID, err := uuid.Parse(j.SubjectId)
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrInvalidData
 	}
 
 	classID, err := uuid.Parse(j.ClassId)
 
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrInvalidData
 	}
 
 	return &domain.CreateTeachingLoad{
@@ -392,12 +416,12 @@ func CreateTeachingLoadToDomain(j *journalv1.CreateTeachingLoadRequest) (*domain
 func UpdateTeachingLoadToDomain(j *journalv1.UpdateTeachingLoadRequest) (*domain.UpdateTeachingLoad, error) {
 	id, err := uuid.Parse(j.Id)
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrInvalidData
 	}
 
 	teacherID, err := uuid.Parse(j.TeacherId)
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrInvalidData
 	}
 
 	return &domain.UpdateTeachingLoad{
@@ -413,13 +437,13 @@ func ListTeachingLoadToDomain(j *journalv1.ListTeachingLoadRequest) (*domain.Lis
 	case *journalv1.ListTeachingLoadRequest_TeacherId:
 		id, err := uuid.Parse(v.TeacherId)
 		if err != nil {
-			return nil, err
+			return nil, domain.ErrInvalidData
 		}
 		teacherID = &id
 	case *journalv1.ListTeachingLoadRequest_ClassId:
 		id, err := uuid.Parse(v.ClassId)
 		if err != nil {
-			return nil, err
+			return nil, domain.ErrInvalidData
 		}
 		classID = &id
 	}

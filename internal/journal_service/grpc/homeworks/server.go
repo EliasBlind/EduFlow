@@ -16,7 +16,7 @@ type Homeworks interface {
 
 	UpdateHomework(ctx context.Context, req *domain.UpdateHomework) (*domain.Homework, error)
 
-	ListHomework(ctx context.Context, req *domain.ListHomeworkRequest) (*domain.ListHomeworkResponse, error)
+	ListHomeworks(ctx context.Context, req *domain.ListHomeworkRequest) ([]domain.Homework, error)
 
 	DeleteHomework(ctx context.Context, id uuid.UUID) error
 }
@@ -67,12 +67,12 @@ func (s *serverAPI) ListHomework(ctx context.Context, req *journalv1.ListHomewor
 		return nil, err
 	}
 
-	listHomework, err := s.homeworks.ListHomework(ctx, params)
+	homeworks, err := s.homeworks.ListHomeworks(ctx, params)
 	if err != nil {
 		return nil, err
 	}
 
-	return mapper.ListHomeworkToProto(listHomework), nil
+	return mapper.ListHomeworkToProto(homeworks), nil
 }
 
 func (s *serverAPI) DeleteHomework(ctx context.Context, req *journalv1.DeleteHomeworkRequest) (*emptypb.Empty, error) {

@@ -1,42 +1,43 @@
-CREATE TABLE classes (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
+-- +goose Up
+CREATE TABLE IF NOT EXISTS  classes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     class_name VARCHAR(50) NOT NULL,
     year_of_study INT NOT NULL,
     graduation_year INT NOT NULL
 );
 
-CREATE TABLE students (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
+CREATE TABLE IF NOT EXISTS  students (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     class_id UUID REFERENCES classes (id) ON DELETE SET NULL,
     full_name VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE teachers (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
+CREATE TABLE IF NOT EXISTS  teachers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     full_name VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE subjects (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
+CREATE TABLE IF NOT EXISTS  subjects (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     full_name VARCHAR(100) NOT NULL
 );
 
 -- Further, teacher_subject can be abbreviated as ts
-CREATE TABLE teacher_subject (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
+CREATE TABLE IF NOT EXISTS  teacher_subject (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     teacher_id UUID NOT NULL REFERENCES teachers (id) ON DELETE CASCADE,
     subject_id UUID NOT NULL REFERENCES subjects (id) ON DELETE CASCADE,
     class_id UUID NOT NULL REFERENCES classes (id) ON DELETE CASCADE,
     UNIQUE (teacher_id, subject_id, class_id)
 );
 
-CREATE TABLE status_code (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
+CREATE TABLE IF NOT EXISTS  status_code (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     abbreviation VARCHAR(6) NOT NULL
 );
 
-CREATE TABLE grades (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
+CREATE TABLE IF NOT EXISTS  grades (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     student_id UUID NOT NULL REFERENCES students (id) ON DELETE CASCADE,
     ts_id UUID NOT NULL REFERENCES teacher_subject (id) ON DELETE CASCADE,
     status_code_id UUID REFERENCES status_code (id) ON DELETE CASCADE,
@@ -55,20 +56,29 @@ CREATE TABLE grades (
 );
 
 
-CREATE TABLE homework (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v7(),
-    teacher_id UUID NOT NULL REFERENCES teachers (id) ON DELETE CASCADE,
-    class_id UUID NOT NULL REFERENCES classes (id) ON DELETE CASCADE,
+CREATE TABLE IF NOT EXISTS  homework (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ts_id UUID NOT NULL REFERENCES teacher_subject (id) ON DELETE CASCADE,
     description_task TEXT NOT NULL,
     deadline_at DATE,
     assigned_at DATE NOT NULL DEFAULT current_date
 );
 
-INSERT INTO grade_statuses (code) VALUES
+INSERT INTO status_code (abbreviation) VALUES
 ('DEBT'),
 ('ABSENT'),
 ('SICK'),
 ('EXCUSE'),
 ('NA'),
 ('RETAKE'),
-('EXEMPT')
+('EXEMPT');
+
+-- +goose Down
+DROP TABLE IF EXISTS homework;
+DROP TABLE IF EXISTS grades;
+DROP TABLE IF EXISTS status_code;
+DROP TABLE IF EXISTS teacher_subject;
+DROP TABLE IF EXISTS subjects;
+DROP TABLE IF EXISTS teachers;
+DROP TABLE IF EXISTS students;
+DROP TABLE IF EXISTS classes;

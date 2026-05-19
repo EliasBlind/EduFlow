@@ -13,15 +13,16 @@ REPORT_PATH         = docs/reports
 # Binaries
 ENVGEN              = .bin/envgen
 JOURNAL_SERVICE     = .bin/journal_service
-SSO_SERVICE         = .bin/sso_service
+SSO_SERVICE_BIN     = .bin/sso_service
 
 # Services
 SSO_DIR				= internal/sso_service
 JOURNAL_DIR			= internal/journal_service
 
-DB_URL="postgres://Elias:2795749b040201cde46538c3b74b4d97@127.0.0.1:5432/sso_db?sslmode=disable"
+DB_URL="postgres://Elias:2795749b040201cde46538c3b74b4d97@127.0.0.1:5432/edu_db?sslmode=disable"
 
-.PHONY: all gen clean rebuild test cover cover-html build help install-deps
+
+.PHONY: all gen clean rebuild test cover cover-html build build-all journal-build sso-build journal-run sso-run help install-deps migrate-up migrate-down
 
 all: gen build
 
@@ -30,27 +31,30 @@ install-deps:
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 
-## build: Compile the server binary
+## build: Compile both server binaries
+build: journal-build sso-build
+
+## journal-build: Compile the journal server binary
 journal-build:
 	go build -o $(JOURNAL_SERVICE) ./cmd/journal_service/server/main.go
 
 journal-run:
 	go run ./cmd/journal_service/server/main.go
 
+## sso-build: Compile the SSO server binary (Исправлено имя выходного файла)
 sso-build:
-	go build -o $(JOURNAL_SERVICE) ./cmd/sso_service/server/main.go
+	go build -o $(SSO_SERVICE_BIN) ./cmd/sso_service/server/main.go
 
 sso-run:
 	-go run ./cmd/sso_service/server/main.go
 
 ## clean: Remove generated files and binaries
 clean:
-	rm -rf bin/
+	rm -rf .bin/ bin/
 	rm -rf $(GEN_OUT)/*
 	rm -rf $(REPORT_PATH)
 	rm -rf $(SSO_DIR)/storage/sqlgen
-	rm -rf $(JOURNAL_DIR)/storage/db
-
+	rm -rf $(JOURNAL_DIR)/storage/sqlgen
 
 rebuild: clean
 	go mod tidy
@@ -58,12 +62,13 @@ rebuild: clean
 	$(MAKE) build
 
 ## gen: Generate Go code
+gen: journal-gen-proto journal-gen-sqlc sso-gen-proto sso-gen-sqlc
 
 journal-gen-proto:
 	mkdir -p $(GEN_OUT)
 	protoc --proto_path=protos \
-		--go_out=$(GEN_OUT) --go_opt=module=$(MODULE)/pkg/protos/gen \
-		--go-grpc_out=$(GEN_OUT) --go-grpc_opt=module=$(MODULE)/pkg/protos/gen \
+		--go_out=$(GEN_OUT) --go_opt=paths=source_relative \
+		--go-grpc_out=$(GEN_OUT) --go-grpc_opt=paths=source_relative \
 		$(JOURNAL_PROTO_SRC)/*.proto
 
 journal-gen-sqlc:
@@ -88,7 +93,6 @@ key-gen: build-envgen
 	@./.bin/envgen -env="configs/journal_service/journal.env" -key="SECRET_KEY" -sed="$(NEW_VAL)"
 	@./.bin/envgen -env="configs/sso_service/sso.env" -key="SECRET_KEY" -sed="$(NEW_VAL)"
 	@echo "The SAME key has been updated in both env files"
-
 
 storage-passwd-gen: build-envgen
 	@$(if $(Env),,$(eval Env=.env))
@@ -132,12 +136,21 @@ build-envgen:
 	mkdir -p .bin
 	go build -o $(ENVGEN) cmd/envgen/main.go
 
+# ИСПРАВЛЕНО: Добавлены раздельные таблицы версий для избежания конфликтов
 migrate-up:
-	goose -dir internal/sso_service/sql/schema postgres $(DB_URL) up
+	goose -table goose_sso_version -dir internal/sso_service/sql/schema postgres $(DB_URL) up
+	goose -table goose_journal_version -dir internal/journal_service/sql/schema postgres $(DB_URL) up
 
+# ИСПРАВЛЕНО: Исправлен ошибочный 'up' на 'down' во второй команде и добавлены таблицы версий
 migrate-down:
-	goose -dir internal/sso_service/sql/schema postgres $(DB_URL) down
+	goose -table goose_sso_version -dir internal/sso_service/sql/schema postgres $(DB_URL) down
+	goose -table goose_journal_version -dir internal/journal_service/sql/schema postgres $(DB_URL) down
 
 ## help: Show available commands
 help:
-	# TODO: Написать help
+	@echo "Available commands:"
+	@echo "  make gen          - Generate Proto and SQLC code for all services"
+	@echo "  make build        - Compile binaries for all services"
+	@echo "  make migrate-up   - Run database migrations for all services"
+	@echo "  make migrate-down - Rollback database migrations for all services"
+	@echo "  make rebuild      - Clean generated files, tidy modules, and rebuild"

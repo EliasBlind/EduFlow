@@ -3,6 +3,8 @@ package mapper
 import (
 	"github.com/EliasBlind/EduFlow/internal/sso_service/domain"
 	ssov1 "github.com/EliasBlind/EduFlow/pkg/protos/gen/sso/v1"
+	"github.com/EliasBlind/EduFlow/pkg/roles"
+	"github.com/google/uuid"
 )
 
 func RegisterToDomain(s *ssov1.RegisterRequest) *domain.RegisterRequest {
@@ -34,4 +36,18 @@ func RefreshToDomain(s *ssov1.RefreshRequest) *domain.RefreshRequest {
 		RefreshToken: s.RefreshToken,
 		AppId:        int(s.AppId),
 	}
+}
+
+func SetRoleToDomain(s *ssov1.SetRoleRequest) (*domain.User, error) {
+
+	parsedUUID, err := uuid.Parse(s.UserId)
+	if err != nil {
+		return nil, domain.ErrInvalidData
+	}
+
+	role := roles.GetRole(s.Role)
+	return &domain.User{
+		Id:   parsedUUID,
+		Role: &role,
+	}, nil
 }

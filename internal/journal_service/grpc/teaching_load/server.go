@@ -16,7 +16,7 @@ type TeachingLoad interface {
 
 	GetTeachingLoad(ctx context.Context, id uuid.UUID) (*domain.TeachingLoad, error)
 
-	ListTeachingLoad(ctx context.Context, req *domain.ListTeachingLoadRequest) (*domain.ListTeachingLoadResponse, error)
+	ListTeachingLoad(ctx context.Context, req *domain.ListTeachingLoadRequest) ([]domain.TeachingLoad, error)
 
 	UpdateTeachingLoad(ctx context.Context, req *domain.UpdateTeachingLoad) (*domain.TeachingLoad, error)
 

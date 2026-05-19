@@ -14,7 +14,7 @@ import (
 type Grades interface {
 	RecordGrade(ctx context.Context, req *domain.RecordGrade) (*domain.Grade, error)
 
-	ListGrades(ctx context.Context, req *domain.ListGradesRequest) (*domain.ListGradesResponse, error)
+	ListGrades(ctx context.Context, req *domain.ListGradesRequest) ([]domain.Grade, error)
 
 	UpdateGrade(ctx context.Context, req *domain.UpdateGrade) (*domain.Grade, error)
 
@@ -58,7 +58,7 @@ func (s *serverAPI) ListGrades(ctx context.Context, req *journalv1.ListGradesReq
 	if err != nil {
 		return nil, err
 	}
-	return mapper.ListGradesToProto(listGrades), nil
+	return mapper.GradesToProto(listGrades), nil
 }
 
 func (s *serverAPI) UpdateGrade(ctx context.Context, req *journalv1.UpdateGradeRequest) (*journalv1.Grade, error) {

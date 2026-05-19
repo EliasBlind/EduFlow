@@ -22,14 +22,14 @@ func New() *validator.Validate {
 	v.RegisterValidation("is_role", func(fl validator.FieldLevel) bool {
 		roleStr, ok := fl.Field().Interface().(string)
 		if !ok {
-			r, ok := fl.Field().Interface().(roles.Role)
+			r, ok := fl.Field().Interface().(string)
 			if !ok {
 				return false
 			}
-			return r.IsRole()
+			return roles.IsRole(r)
 		}
 
-		return roles.Role(roleStr).IsRole()
+		return roles.IsRole(roleStr)
 	})
 	return v
 }

@@ -3,6 +3,7 @@ package domain
 import (
 	"fmt"
 
+	"github.com/EliasBlind/EduFlow/pkg/roles"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 )
@@ -29,9 +30,10 @@ func (tp *TokenParser) ParseToken(tokenStr string) (*UserClaims, error) {
 		return nil, fmt.Errorf("invalid token: %w", err)
 	}
 
-	idStr, okId := claims["uid"].(string)
-	role, okRole := claims["role"].(string)
-	if !okId || !okRole {
+	idStr, okId := claims["Id"].(string)
+	login, okLogin := claims["Login"].(string)
+	role, okRole := claims["Role"].(string)
+	if !okId || !okRole || !okLogin {
 		return nil, fmt.Errorf("missing fields in token")
 	}
 
@@ -41,7 +43,8 @@ func (tp *TokenParser) ParseToken(tokenStr string) (*UserClaims, error) {
 	}
 
 	return &UserClaims{
-		ID:   id,
-		Role: role,
+		ID:    id,
+		Login: login,
+		Role:  roles.GetRole(role),
 	}, nil
 }

@@ -3,18 +3,13 @@ package domain
 import "github.com/google/uuid"
 
 type Student struct {
-	ID       uuid.UUID  `validate:"is_uuid7"`
-	ClassID  *uuid.UUID `validate:"omitempty,is_uuid7"`
-	FullName string     `validate:"required"`
-}
-
-type CreateStudent struct {
-	ClassID  *uuid.UUID `validate:"omitempty,is_uuid7"`
-	FullName string     `validate:"required"`
+	ID       *uuid.UUID
+	ClassID  *uuid.UUID
+	FullName string `validate:"required"`
 }
 
 type ListStudentsRequest struct {
-	ClassID uuid.UUID `validate:"is_uuid7"`
+	ClassID uuid.UUID
 	Limit   uint32
 	Offset  uint32
 }
@@ -25,7 +20,7 @@ type ListStudentsResponse struct {
 }
 
 type UpdateStudent struct {
-	ID       uuid.UUID  `validate:"is_uuid7"`
-	ClassID  *uuid.UUID `validate:"omitempty,is_uuid7"`
-	FullName *string    `validate:"omitempty,required"`
+	ID       uuid.UUID
+	ClassID  *uuid.UUID
+	FullName *string `validate:"omitempty,required"`
 }

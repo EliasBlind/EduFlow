@@ -1,14 +1,18 @@
 env: "local" # local, dev, prod
 
-storage:
-  host: "localhost"
+postgresql:
+  host: "postgres"
   port: 5432
   user: "Elias"
-  db_name: "journal"
+  db_name: "edu_db"
   sslmode: "disable"
   max_open_conns: 10
  
 grpc:
-  host: "localhost"
+  host: "0.0.0.0"
   port: 4043
   timeout: 2m
+
+locale:
+  default_lang: en
+  path: "internal/journal_service/locales"

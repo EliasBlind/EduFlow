@@ -12,14 +12,14 @@ type CreateClass struct {
 }
 
 type Class struct {
-	ID             uuid.UUID `validate:"is_uuid7"`
+	ID             uuid.UUID
 	ClassName      string    `validate:"required"`
 	YearOfStudy    uint32
 	GraduationYear uint32 `validate:"omitempty,year_gte_now"`
 }
 
 type ListTeacherClasses struct {
-	TeacherID uuid.UUID `validate:"is_uuid7"`
+	TeacherID uuid.UUID
 	Limit     uint32
 	Offset    uint32
 }
@@ -30,7 +30,7 @@ type ListClasses struct {
 }
 
 type UpdateClass struct {
-	ID             uuid.UUID `validate:"is_uuid7"`
+	ID             uuid.UUID
 	ClassName      *string   `validate:"omitempty,required"`
 	YearOfStudy    *uint32
 	GraduationYear *uint32 `validate:"omitempty,year_gte_now"`

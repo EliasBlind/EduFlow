@@ -13,12 +13,13 @@ import (
 )
 
 type Config struct {
-	Env     envutil.Env   `yaml:"env" env-default:"local" validate:"required,oneof=local dev prod"`
-	Storage StorageConfig `yaml:"storage" validate:"required"`
-	GRPC    GRPCConfig    `yaml:"grpc" validate:"required"`
+	Env        envutil.Env      `yaml:"env" env-default:"local" validate:"required,oneof=local dev prod"`
+	Postgresql PostgresqlConfig `yaml:"postgresql" validate:"required"`
+	GRPC       GRPCConfig       `yaml:"grpc" validate:"required"`
+	Locale     LocaleConfig     `yaml:"locale" validate:"required"`
 }
 
-type StorageConfig struct {
+type PostgresqlConfig struct {
 	Host         string `yaml:"host" validate:"required,hostname_rfc1123|ip"`
 	Port         int    `yaml:"port" validate:"required,gte=1,lte=65535"`
 	User         string `yaml:"user" validate:"required"`
@@ -33,6 +34,11 @@ type GRPCConfig struct {
 	Host      string        `yaml:"host" validate:"required"`
 	Port      int           `yaml:"port" validate:"required,gte=1,lte=65535"`
 	Timeout   time.Duration `yaml:"timeout" env-default:"5s"`
+}
+
+type LocaleConfig struct {
+	DefaultLang string `yaml:"default_lang"`
+	Path        string `yaml:"path"`
 }
 
 func MustLoad() *Config {
@@ -102,7 +108,7 @@ func (cfg *Config) mustValidateConfigDate() {
 		panic("error config validate: " + err.Error())
 	}
 
-	if cfg.Env.IsProd() && cfg.Storage.Sslmode == "disable" {
+	if cfg.Env.IsProd() && cfg.Postgresql.Sslmode == "disable" {
 		panic("sslmode 'disable' is not allowed in production")
 	}
 

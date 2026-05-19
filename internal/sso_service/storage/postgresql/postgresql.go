@@ -1,4 +1,4 @@
-package postgres
+package postgresql
 
 import (
 	"context"
@@ -11,6 +11,8 @@ import (
 	"github.com/EliasBlind/EduFlow/internal/sso_service/config"
 	"github.com/EliasBlind/EduFlow/internal/sso_service/domain"
 	"github.com/EliasBlind/EduFlow/internal/sso_service/storage/sqlgen"
+	pkgmapper "github.com/EliasBlind/EduFlow/pkg/mappers"
+	"github.com/EliasBlind/EduFlow/pkg/roles"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -19,14 +21,14 @@ import (
 
 type Storage struct {
 	log     *slog.Logger
-	cfg     *config.PostgresSqlConfig
+	cfg     *config.PostgresqlConfig
 	queries *sqlgen.Queries
 	pool    *pgxpool.Pool
 }
 
 func New(
 	log *slog.Logger,
-	cfg *config.PostgresSqlConfig,
+	cfg *config.PostgresqlConfig,
 ) (*Storage, error) {
 	const op = "postgres.New"
 	log = log.With(
@@ -84,8 +86,7 @@ func (s *Storage) CreateUser(ctx context.Context, params *domain.User) (uuid.UUI
 
 	person, err := s.queries.CreatePerson(ctx, arg)
 	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
+		if pgErr, ok := errors.AsType[*pgconn.PgError](err); ok {
 			if pgErr.Code == "23505" { // Unique violation
 				log.Warn("user already exists", "error", err)
 				return uuid.Nil, domain.ErrUserAlreadyExists
@@ -127,12 +128,13 @@ func (s *Storage) GetPersonByLogin(ctx context.Context, login string) (*domain.U
 
 	log.Info("person retrieved successfully")
 
+	role := roles.GetRole(person.UserRole)
 	return &domain.User{
 		Id:           uid,
 		Email:        person.Email,
 		Login:        person.Username,
 		PasswordHash: person.PasswordHash,
-		Role:         &person.UserRole,
+		Role:         &role,
 	}, nil
 }
 
@@ -142,7 +144,7 @@ func (s *Storage) GetPersonById(ctx context.Context, uid uuid.UUID) (*domain.Use
 		"op", op,
 	)
 
-	pgId := toPgUUID(uid)
+	pgId := pkgmapper.ToPgUUID(uid)
 	person, err := s.queries.GetPersonById(ctx, pgId)
 	if err != nil {
 		log.Error("failed to get person from database", "error", err)
@@ -151,11 +153,12 @@ func (s *Storage) GetPersonById(ctx context.Context, uid uuid.UUID) (*domain.Use
 
 	log.Info("person retrieved successfully")
 
+	role := roles.GetRole(person.UserRole)
 	return &domain.User{
 		Id:    uid,
 		Email: person.Email,
 		Login: person.Username,
-		Role:  &person.UserRole,
+		Role:  &role,
 	}, nil
 }
 
@@ -189,7 +192,7 @@ func (s *Storage) CreateRefreshToken(
 
 	hash := sha256.Sum256([]byte(tokenID.String()))
 	arg := sqlgen.SaveRefreshTokenParams{
-		UserID:    toPgUUID(userID),
+		UserID:    pkgmapper.ToPgUUID(userID),
 		AppID:     int32(appID),
 		TokenID:   hash[:],
 		ExpiresAt: pgtype.Timestamp{Time: expiresAt, Valid: true},
@@ -235,12 +238,45 @@ func (s *Storage) DeleteSessionByTokenID(ctx context.Context, tokenID uuid.UUID)
 func (s *Storage) DeleteAllUserSessions(ctx context.Context, userID uuid.UUID) error {
 	const op = "storage.postgresql.DeleteAllUserSessions"
 
-	err := s.queries.DeleteAllUserSessions(ctx, toPgUUID(userID))
+	err := s.queries.DeleteAllUserSessions(ctx, pkgmapper.ToPgUUID(userID))
 	if err != nil {
 		s.log.Error("failed to delete all user sessions", "op", op, "user_id", userID, "error", err)
 		return fmt.Errorf("%s: %w", op, err)
 	}
 
+	return nil
+}
+
+func (s *Storage) ListUsers(ctx context.Context) ([]domain.User, error) {
+	users, err := s.queries.ListUsers(ctx)
+	if err != nil {
+		return nil, domain.ErrInternal
+	}
+
+	return pkgmapper.MapSlice(
+		users,
+		func(user *sqlgen.ListUsersRow) domain.User {
+			role := roles.GetRole(user.UserRole)
+			return domain.User{
+				Id:    user.ID.Bytes,
+				Email: user.Email,
+				Login: user.Username,
+				Role:  &role,
+			}
+		},
+	), nil
+}
+
+func (s *Storage) SetRole(ctx context.Context, user *domain.User) error {
+	arg := sqlgen.UpdateRoleParams{
+		ID:       pkgmapper.ToPgUUID(user.Id),
+		UserRole: *user.Role,
+	}
+
+	_, err := s.queries.UpdateRole(ctx, arg)
+	if err != nil {
+		return domain.ErrInternal
+	}
 	return nil
 }
 
@@ -250,8 +286,4 @@ func (s *Storage) Stop() {
 	s.log.With("op", op).Info("closing postgres connection pool")
 
 	s.pool.Close()
-}
-
-func toPgUUID(id uuid.UUID) pgtype.UUID {
-	return pgtype.UUID{Bytes: id, Valid: true}
 }

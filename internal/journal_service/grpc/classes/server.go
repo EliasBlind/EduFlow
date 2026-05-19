@@ -14,13 +14,15 @@ import (
 type Classes interface {
 	CreateClass(ctx context.Context, params *domain.CreateClass) (*domain.Class, error)
 
-	GetClass(ctx context.Context, class_id uuid.UUID) (*domain.Class, error)
+	GetClass(ctx context.Context, classId uuid.UUID) (*domain.Class, error)
 
-	ListTeacherClasses(ctx context.Context, params *domain.ListTeacherClasses) (*domain.ListClasses, error)
+	ListClasses(ctx context.Context) ([]domain.Class, error)
+
+	ListTeacherClasses(ctx context.Context, params *domain.ListTeacherClasses) ([]domain.Class, error)
 
 	UpdateClass(ctx context.Context, params *domain.UpdateClass) (*domain.Class, error)
 
-	DeleteClassRequest(ctx context.Context, class_id uuid.UUID) error
+	DeleteClass(ctx context.Context, classId uuid.UUID) error
 }
 
 type serverAPI struct {
@@ -61,17 +63,25 @@ func (s *serverAPI) GetClass(ctx context.Context, req *journalv1.GetClassRequest
 	return mapper.ClassToProto(class), err
 }
 
+func (s *serverAPI) ListClasses(ctx context.Context, req *journalv1.ListClassesRequest) (*journalv1.ListClassesResponse, error) {
+	classes, err := s.classes.ListClasses(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return mapper.ListTeacherClassesToProto(classes), err
+}
+
 func (s *serverAPI) ListTeacherClasses(ctx context.Context, req *journalv1.ListTeacherClassesRequest) (*journalv1.ListClassesResponse, error) {
 	param, err := mapper.ListTeacherClassesToDomain(req)
 	if err != nil {
 		return nil, err
 	}
 
-	list_teacher_classes, err := s.classes.ListTeacherClasses(ctx, param)
+	classes, err := s.classes.ListTeacherClasses(ctx, param)
 	if err != nil {
 		return nil, err
 	}
-	return mapper.ListTeacherClassesToProto(list_teacher_classes), err
+	return mapper.ListTeacherClassesToProto(classes), err
 }
 
 func (s *serverAPI) UpdateClass(ctx context.Context, req *journalv1.UpdateClassRequest) (*journalv1.Class, error) {
@@ -94,7 +104,7 @@ func (s *serverAPI) DeleteClass(ctx context.Context, req *journalv1.DeleteClassR
 		return nil, err
 	}
 
-	err = s.classes.DeleteClassRequest(
+	err = s.classes.DeleteClass(
 		ctx,
 		id,
 	)
