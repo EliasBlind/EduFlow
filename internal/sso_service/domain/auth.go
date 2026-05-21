@@ -10,7 +10,7 @@ import (
 
 type RegisterRequest struct {
 	Email    string `validate:"required,email"`
-	Login    string `validate:"required,min=5,max=20,alphanumunicode"`
+	Login    string `validate:"required,min=2,max=20,alphanumunicode"`
 	Password string `validate:"required,max=40"`
 	AppId    int
 }
@@ -34,7 +34,7 @@ type TokenPair struct {
 type User struct {
 	Id           uuid.UUID   `validate:"required"`
 	Email        string      `validate:"required,email"`
-	Login        string      `validate:"required,min=5,max=20,alphanumunicode"`
+	Login        string      `validate:"required,min=2,max=20,alphanumunicode"`
 	PasswordHash []byte      `validate:"required"`
 	Role         *roles.Role `validate:"is_role"`
 }

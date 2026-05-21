@@ -115,7 +115,7 @@ func (a *Auth) GetClass(
 }
 
 func (a *Auth) ListClasses(ctx context.Context) ([]domain.Class, error) {
-	const op = "auth.ListTeacherClasses"
+	const op = "auth.ListClasses"
 
 	claims, err := domain.GetUserClaims(ctx)
 	if err != nil {
@@ -130,7 +130,7 @@ func (a *Auth) ListClasses(ctx context.Context) ([]domain.Class, error) {
 	)
 
 	if !claims.Role.IsAdmin() {
-		log.Warn("permission denied: update requires admin role")
+		log.Warn("permission denied: listing all classes requires admin role")
 		return nil, domain.ErrForbidden
 	}
 
@@ -140,7 +140,7 @@ func (a *Auth) ListClasses(ctx context.Context) ([]domain.Class, error) {
 		return nil, domain.ErrInternal
 	}
 
-	log.Info("successfully retrieved teacher classes")
+	log.Info("successfully retrieved all system classes", "count", len(classes))
 	return classes, nil
 }
 

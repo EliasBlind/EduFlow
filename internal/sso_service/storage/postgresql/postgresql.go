@@ -270,7 +270,7 @@ func (s *Storage) ListUsers(ctx context.Context) ([]domain.User, error) {
 func (s *Storage) SetRole(ctx context.Context, user *domain.User) error {
 	arg := sqlgen.UpdateRoleParams{
 		ID:       pkgmapper.ToPgUUID(user.Id),
-		UserRole: *user.Role,
+		UserRole: user.Role.String(),
 	}
 
 	_, err := s.queries.UpdateRole(ctx, arg)

@@ -3,7 +3,9 @@ CREATE TABLE IF NOT EXISTS  classes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     class_name VARCHAR(50) NOT NULL,
     year_of_study INT NOT NULL,
-    graduation_year INT NOT NULL
+    graduation_year INT NOT NULL,
+    
+    CONSTRAINT unique_class_per_period UNIQUE (class_name, graduation_year)
 );
 
 CREATE TABLE IF NOT EXISTS  students (

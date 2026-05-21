@@ -21,15 +21,14 @@ LIMIT 1;
 
 -- name: ListClasses :many
 SELECT DISTINCT
-    classes.id,
-    classes.class_name,
-    classes.year_of_study,
-    classes.graduation_year
+    id,
+    class_name,
+    year_of_study,
+    graduation_year
 FROM classes
-INNER JOIN teacher_subject ON classes.id = teacher_subject.class_id
 ORDER BY
-    classes.year_of_study DESC,
-    classes.class_name ASC;
+    year_of_study DESC,
+    class_name ASC;
 
 -- name: ListTeacherClasses :many
 SELECT DISTINCT
@@ -39,7 +38,9 @@ SELECT DISTINCT
     classes.graduation_year
 FROM classes
 INNER JOIN teacher_subject ON classes.id = teacher_subject.class_id
-WHERE teacher_subject.teacher_id = $1
+WHERE 
+    teacher_subject.teacher_id = $1
+    AND classes.graduation_year >= EXTRACT(YEAR FROM CURRENT_DATE)
 ORDER BY
     classes.year_of_study DESC,
     classes.class_name ASC

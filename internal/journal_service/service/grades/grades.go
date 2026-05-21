@@ -70,6 +70,7 @@ func (a *Auth) RecordGrade(ctx context.Context, params *domain.RecordGrade) (*do
 
 	return grade, nil
 }
+
 func (a *Auth) ListGrades(
 	ctx context.Context,
 	params *domain.ListGradesRequest,

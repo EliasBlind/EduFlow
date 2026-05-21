@@ -18,6 +18,8 @@ func main() {
 
 	log.Info("start application")
 
+	log.Warn("check parsed port", slog.Int("port", cfg.GRPC.Port))
+
 	application := app.New(log, cfg)
 	go application.GRPCService.MustRun()
 

@@ -15,6 +15,8 @@ type PostgresSql interface {
 
 	GetStudent(ctx context.Context, studentID uuid.UUID) (*domain.Student, error)
 
+	ListStudentsWithoutClass(ctx context.Context) ([]domain.Student, error)
+
 	ListStudents(ctx context.Context, params *domain.ListStudentsRequest) ([]domain.Student, error)
 
 	UpdateStudent(ctx context.Context, params *domain.UpdateStudent) (*domain.Student, error)
@@ -103,6 +105,27 @@ func (a *Auth) GetStudent(
 
 	log.Info("student retrieved successfully")
 	return student, nil
+}
+
+func (a *Auth) ListStudentsWithoutClass(ctx context.Context) ([]domain.Student, error) {
+	const op = "auth.ListStudents"
+
+	claims, err := domain.GetUserClaims(ctx)
+	if err != nil {
+		a.log.Warn("unauthorized attempt", "op", op, "error", err)
+		return nil, domain.ErrUnauthorized
+	}
+
+	log := a.log.With("op", op, "user_id", claims.ID)
+
+	students, err := a.sql.ListStudentsWithoutClass(ctx)
+	if err != nil {
+		log.Error("failed to list students", "error", err)
+		return nil, domain.ErrInternal
+	}
+
+	log.Info("students listed successfully", "count", len(students))
+	return students, nil
 }
 
 func (a *Auth) ListStudents(

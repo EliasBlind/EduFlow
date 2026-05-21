@@ -35,8 +35,8 @@ FROM grades AS g
 INNER JOIN teacher_subject AS ts ON g.ts_id = ts.id
 INNER JOIN students AS st ON g.student_id = st.id
 WHERE
-    ts.subject_id = $1
-    AND ts.class_id = $2
+    (sqlc.narg('subject_id')::uuid IS NULL OR ts.subject_id = sqlc.narg('subject_id')::uuid)
+    AND (sqlc.narg('class_id')::uuid IS NULL OR ts.class_id = sqlc.narg('class_id')::uuid)
     AND (sqlc.narg('student_id')::uuid IS NULL OR g.student_id = sqlc.narg('student_id')::uuid)
 ORDER BY g.lesson_date;
 

@@ -20,6 +20,15 @@ WHERE id = sqlc.arg('id')
 ORDER BY full_name
 LIMIT 1;
 
+-- name: ListStudentsWithoutClass :many
+SELECT
+    id,
+    class_id,
+    full_name
+FROM students
+WHERE class_id IS NULL
+ORDER BY full_name;
+
 -- name: ListStudents :many
 SELECT
     id,

@@ -52,30 +52,17 @@ func New(
 func (a *Auth) CreateStudent(
 	ctx context.Context,
 	jwt string,
-	id,
-	classID *uuid.UUID,
+	id uuid.UUID,
 	name string,
 ) error {
 	md := metadata.Pairs("authorization", "Bearer "+jwt)
 	ctx = metadata.NewOutgoingContext(ctx, md)
 
-	var strId *string
-	if id != nil {
-		buffer := id.String()
-		strId = &buffer
-	}
-
-	var strClassId *string
-	if classID != nil {
-		buffer := classID.String()
-		strClassId = &buffer
-	}
-
+	strId := id.String()
 	_, err := a.clientStudent.CreateStudent(
 		ctx,
 		&journalv1.CreateStudentRequest{
-			Id:       strId,
-			ClassId:  strClassId,
+			Id:       &strId,
 			FullName: name,
 		},
 	)

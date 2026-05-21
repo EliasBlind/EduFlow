@@ -62,8 +62,7 @@ type JournalService interface {
 	CreateStudent(
 		ctx context.Context,
 		jwt string,
-		id,
-		classID *uuid.UUID,
+		id uuid.UUID,
 		name string,
 	) error
 
@@ -442,8 +441,7 @@ func (a *Auth) SetRole(ctx context.Context, token string, user *domain.User) err
 			err := a.journal.CreateStudent(
 				bgCtx,
 				token,
-				&user.Id,
-				nil,
+				user.Id,
 				user.Login,
 			)
 			if err != nil {

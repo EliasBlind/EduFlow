@@ -16,6 +16,8 @@ type Students interface {
 
 	GetStudent(ctx context.Context, studentID uuid.UUID) (*domain.Student, error)
 
+	ListStudentsWithoutClass(ctx context.Context) ([]domain.Student, error)
+
 	ListStudents(ctx context.Context, req *domain.ListStudentsRequest) ([]domain.Student, error)
 
 	UpdateStudent(ctx context.Context, req *domain.UpdateStudent) (*domain.Student, error)
@@ -62,6 +64,17 @@ func (s *serverAPI) GetStudent(ctx context.Context, req *journalv1.GetStudentReq
 	}
 
 	return mapper.StudentToProto(student), nil
+}
+
+func (s *serverAPI) ListStudentsWithoutClass(
+	ctx context.Context,
+	req *journalv1.ListStudentsWithoutClassRequest,
+) (*journalv1.ListStudentsResponse, error) {
+	listStudent, err := s.students.ListStudentsWithoutClass(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return mapper.ListStudentsToProto(listStudent), nil
 }
 
 func (s *serverAPI) ListStudents(ctx context.Context, req *journalv1.ListStudentsRequest) (*journalv1.ListStudentsResponse, error) {

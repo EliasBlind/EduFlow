@@ -8,7 +8,6 @@ package sqlgen
 import (
 	"context"
 
-	"github.com/EliasBlind/EduFlow/pkg/roles"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -255,7 +254,7 @@ RETURNING id, email, username, password_hash, user_role
 
 type UpdateRoleParams struct {
 	ID       pgtype.UUID `json:"id"`
-	UserRole roles.Role      `json:"user_role"`
+	UserRole string      `json:"user_role"`
 }
 
 func (q *Queries) UpdateRole(ctx context.Context, arg UpdateRoleParams) (Person, error) {

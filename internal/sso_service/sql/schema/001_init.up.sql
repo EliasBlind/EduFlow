@@ -1,4 +1,6 @@
 -- +goose Up
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 CREATE TABLE IF NOT EXISTS person (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email TEXT NOT NULL UNIQUE,
@@ -18,9 +20,7 @@ CREATE TABLE IF NOT EXISTS refresh_sessions (
     created_at TIMESTAMP DEFAULT now()
 );
 
-CREATE INDEX idx_refresh_tokens_token_id ON refresh_sessions (token_id);
-
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token_id ON refresh_sessions (token_id);
 
 INSERT INTO person (
     email,
@@ -32,18 +32,9 @@ INSERT INTO person (
     'admin',
     crypt('admin', gen_salt('bf'))::BYTEA,
     'admin'
-);
+) ON CONFLICT DO NOTHING;
 
 -- +goose Down
-DROP INDEX IF EXISTS idx_refresh_tokens_token_id;
-
-DROP INDEX IF EXISTS idx_refresh_tokens_token_id;
-
 DROP TABLE IF EXISTS refresh_sessions;
 
-DROP INDEX IF EXISTS idx_person_role;
-
 DROP TABLE IF EXISTS person;
-
-DELETE FROM person
-WHERE username = 'admin';

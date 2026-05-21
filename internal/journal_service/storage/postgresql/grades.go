@@ -54,6 +54,7 @@ func (s *Storage) RecordGrade(
 		Score:        scorePtr,
 		LessonNumber: int16(params.LessonNumber),
 		LessonDate:   mapper.ToDate(params.DateOfGrade),
+		Note:         params.Note,
 	}
 
 	grade, err := s.queries.RecordGrade(ctx, arg)
@@ -89,29 +90,57 @@ func (s *Storage) RecordGrade(
 		DateOfGrade:  &grade.LessonDate.Time,
 		Grade:        finalScorePtr,
 		StatusCodeID: grade.StatusCodeID.Bytes,
+		Note:         grade.Note,
 	}, nil
 }
 
 func (s *Storage) GetGrades(
 	ctx context.Context,
-	teacherId uuid.UUID,
+	userId uuid.UUID,
 	params *domain.ListGradesRequest,
 ) ([]domain.Grade, error) {
 	const op = "storage.postgresql.GetClassGrades"
 
+	var subjectStr, classStr, studentStr string
+	if params.SubjectID != nil {
+		subjectStr = params.SubjectID.String()
+	} else {
+		subjectStr = "nil"
+	}
+	if params.ClassID != nil {
+		classStr = params.ClassID.String()
+	} else {
+		classStr = "nil"
+	}
+	if params.StudentID != nil {
+		studentStr = params.StudentID.String()
+	} else {
+		studentStr = "nil"
+	}
+
 	log := s.log.With(
 		slog.String("op", op),
-		slog.String("teacher_id", teacherId.String()),
-		slog.String("subject_id", params.SubjectID.String()),
-		slog.String("class_id", params.ClassID.String()),
+		slog.String("user_id", userId.String()),
+		slog.String("subject_id", subjectStr),
+		slog.String("class_id", classStr),
+		slog.String("student_id", studentStr),
 	)
 
 	log.Debug("fetching grades list from database")
 
-	arg := sqlgen.GetGradesParams{
-		SubjectID: mapper.PtrToPgUUID(params.SubjectID),
-		ClassID:   mapper.PtrToPgUUID(params.ClassID),
-		StudentID: mapper.PtrToPgUUID(params.StudentID),
+	arg := sqlgen.GetGradesParams{}
+
+	if params.SubjectID != nil && *params.SubjectID != uuid.Nil {
+		arg.SubjectID = mapper.PtrToPgUUID(params.SubjectID)
+	}
+	if params.ClassID != nil && *params.ClassID != uuid.Nil {
+		arg.ClassID = mapper.PtrToPgUUID(params.ClassID)
+	}
+
+	if params.StudentID != nil && *params.StudentID != uuid.Nil {
+		arg.StudentID = mapper.PtrToPgUUID(params.StudentID)
+	} else {
+		arg.StudentID.Valid = false
 	}
 
 	grades, err := s.queries.GetGrades(ctx, arg)
@@ -138,6 +167,7 @@ func (s *Storage) GetGrades(
 				DateOfGrade:  &f.LessonDate.Time,
 				Grade:        scorePtr,
 				StatusCodeID: f.StatusCodeID.Bytes,
+				Note:         f.Note,
 			}
 		},
 	), nil

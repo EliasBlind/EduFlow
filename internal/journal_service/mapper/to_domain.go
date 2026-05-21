@@ -19,7 +19,7 @@ func CreateStudentToDomain(j *journalv1.CreateStudentRequest) (*domain.Student, 
 		return nil, domain.ErrInvalidData
 	}
 
-	classID, err := pkgmapper.ToUUID(j.Id)
+	classID, err := pkgmapper.ToUUID(j.ClassId)
 	if err != nil {
 		return nil, domain.ErrInvalidData
 	}

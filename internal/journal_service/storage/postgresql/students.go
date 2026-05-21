@@ -21,17 +21,19 @@ func (s *Storage) CreateStudent(
 
 	log := s.log.With(
 		"op", op,
-		"class_id", params.ClassID.String(),
 		"full_name", params.FullName,
 	)
 
 	arg := sqlgen.CreateStudentParams{
-		ClassID:  mapper.PtrToPgUUID(params.ClassID),
 		FullName: params.FullName,
 	}
 
-	if params.ID != nil {
+	if params.ID != nil && *params.ID != uuid.Nil {
 		arg.ID = mapper.PtrToPgUUID(params.ID)
+	}
+
+	if params.ClassID != nil && *params.ClassID != uuid.Nil {
+		arg.ClassID = mapper.PtrToPgUUID(params.ClassID)
 	}
 
 	class, err := s.queries.CreateStudent(ctx, arg)
@@ -72,6 +74,31 @@ func (s *Storage) GetStudent(
 		ClassID:  mapper.Ptr(uuid.UUID(student.ClassID.Bytes)),
 		FullName: student.FullName,
 	}, nil
+}
+
+func (s *Storage) ListStudentsWithoutClass(ctx context.Context) ([]domain.Student, error) {
+	const op = "storage.postgresql.ListStudents"
+
+	log := s.log.With(
+		"op", op,
+	)
+
+	students, err := s.queries.ListStudentsWithoutClass(ctx)
+	if err != nil {
+		log.Error("failed to list students", "error", err)
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return mapper.MapSlice(
+		students,
+		func(f *sqlgen.Student) domain.Student {
+			return domain.Student{
+				ID:       pkgmapper.ToPtrUUID(f.ID.Bytes),
+				ClassID:  mapper.Ptr(uuid.UUID(f.ClassID.Bytes)),
+				FullName: f.FullName,
+			}
+		},
+	), nil
 }
 
 func (s *Storage) ListStudents(
@@ -115,25 +142,18 @@ func (s *Storage) UpdateStudent(
 ) (*domain.Student, error) {
 	const op = "storage.postgresql.UpdateStudent"
 
-	var classIDStr, fullNameStr string
-	if params.ClassID != nil {
-		classIDStr = params.ClassID.String()
-	}
-	if params.FullName != nil {
-		fullNameStr = *params.FullName
-	}
-
 	log := s.log.With(
 		"op", op,
 		"id", params.ID.String(),
-		"class_id", classIDStr,
-		"full_name", fullNameStr,
 	)
 
 	arg := sqlgen.UpdateStudentParams{
 		ID:       mapper.ToPgUUID(params.ID),
-		ClassID:  mapper.ToPgUUID(*params.ClassID),
 		FullName: params.FullName,
+	}
+
+	if params.ClassID != nil {
+		arg.ClassID = mapper.ToPgUUID(*params.ClassID)
 	}
 
 	res, err := s.queries.UpdateStudent(ctx, arg)

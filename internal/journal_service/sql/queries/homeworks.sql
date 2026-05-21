@@ -29,7 +29,7 @@ SELECT
     h.deadline_at,
     h.assigned_at
 FROM homework AS h
-INNER JOIN teacher_subject AS ts ON homework.ts_id = teacher_subject.id
+INNER JOIN teacher_subject AS ts ON h.ts_id = ts.id
 WHERE
     ts.class_id = $1
     AND ts.subject_id = $2
