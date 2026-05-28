@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"github.com/EliasBlind/EduFlow/internal/journal_service/config"
-	"github.com/EliasBlind/EduFlow/internal/journal_service/domain"
 	"github.com/EliasBlind/EduFlow/internal/journal_service/grpc/classes"
 	"github.com/EliasBlind/EduFlow/internal/journal_service/grpc/grades"
 	"github.com/EliasBlind/EduFlow/internal/journal_service/grpc/homeworks"
@@ -20,6 +19,7 @@ import (
 	classessvc "github.com/EliasBlind/EduFlow/internal/journal_service/service/classes"
 	gradessvc "github.com/EliasBlind/EduFlow/internal/journal_service/service/grades"
 	homeworkssvc "github.com/EliasBlind/EduFlow/internal/journal_service/service/homeworks"
+	"github.com/EliasBlind/EduFlow/internal/journal_service/service/sso"
 	statuscodesvc "github.com/EliasBlind/EduFlow/internal/journal_service/service/status_code"
 	studentssvc "github.com/EliasBlind/EduFlow/internal/journal_service/service/students"
 	subjectssvc "github.com/EliasBlind/EduFlow/internal/journal_service/service/subjects"
@@ -28,6 +28,7 @@ import (
 	"github.com/EliasBlind/EduFlow/internal/journal_service/storage/postgresql"
 	"github.com/EliasBlind/EduFlow/pkg/i18n"
 	"github.com/EliasBlind/EduFlow/pkg/interceptors"
+	usercalimas "github.com/EliasBlind/EduFlow/pkg/user_calimas"
 	"github.com/go-playground/validator/v10"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -37,6 +38,7 @@ type App struct {
 	log        *slog.Logger
 	gRPCServer *grpc.Server
 	port       int
+	ssoserv    *sso.Auth
 }
 
 func New(
@@ -52,11 +54,11 @@ func New(
 		panic(err)
 	}
 
-	token := domain.NewToken(cfg.GRPC.SecretKey)
+	token := usercalimas.NewToken(cfg.GRPC.SecretKey)
 
 	gRPCServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
-			UnaryAuthInterceptor(token, log),
+			interceptors.UnaryAuthInterceptor(token, log),
 			interceptors.ErrorInterceptor(trans, mapper.MapToRPCError),
 		),
 	)
@@ -90,11 +92,14 @@ func New(
 	)
 	statuscode.Register(gRPCServer, stscode)
 
+	ssoserv := sso.New(log, &cfg.Sso)
 	stdnt := studentssvc.New(
 		log,
 		val,
 		sql,
+		ssoserv,
 	)
+
 	students.Register(gRPCServer, stdnt)
 
 	sbjct := subjectssvc.New(
@@ -108,7 +113,9 @@ func New(
 		log,
 		val,
 		sql,
+		ssoserv,
 	)
+
 	teachers.Register(gRPCServer, tchr)
 
 	tl := teachingloadsvc.New(
@@ -122,6 +129,7 @@ func New(
 		log:        log,
 		gRPCServer: gRPCServer,
 		port:       cfg.GRPC.Port,
+		ssoserv: ssoserv,
 	}
 }
 
@@ -167,4 +175,5 @@ func (app *App) Stop() {
 		Info("Stopping gRPC server", slog.Int("port", app.port))
 
 	app.gRPCServer.GracefulStop()
+	app.ssoserv.Stop()
 }

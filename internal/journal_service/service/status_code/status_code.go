@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/EliasBlind/EduFlow/internal/journal_service/domain"
+	usercalimas "github.com/EliasBlind/EduFlow/pkg/user_calimas"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
@@ -44,7 +45,7 @@ func (a *Auth) CreateStatusCode(
 ) (*domain.StatusCode, error) {
 	const op = "auth.CreateStatusCode"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("unauthorized attempt", "op", op, "error", err)
 		return nil, domain.ErrUnauthorized
@@ -80,7 +81,7 @@ func (a *Auth) UpdateStatusCode(
 ) (*domain.StatusCode, error) {
 	const op = "auth.UpdateStatusCode"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("unauthorized attempt", "op", op, "error", err)
 		return nil, domain.ErrUnauthorized
@@ -120,7 +121,7 @@ func (a *Auth) ListStatusCode(
 ) ([]domain.StatusCode, error) {
 	const op = "auth.ListStatusCode"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("unauthorized attempt", "op", op, "error", err)
 		return nil, domain.ErrUnauthorized
@@ -147,7 +148,7 @@ func (a *Auth) DeleteStatusCode(
 ) error {
 	const op = "auth.DeleteStatusCode"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("unauthorized attempt", "op", op, "error", err)
 		return domain.ErrUnauthorized

@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/EliasBlind/EduFlow/internal/journal_service/domain"
+	usercalimas "github.com/EliasBlind/EduFlow/pkg/user_calimas"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
@@ -24,21 +25,28 @@ type PostgresSql interface {
 	DeleteStudent(ctx context.Context, id uuid.UUID) error
 }
 
+type Sso interface {
+	CreateUserSso(ctx context.Context, jwt string, user *domain.User) error
+}
+
 type Auth struct {
 	log *slog.Logger
 	val *validator.Validate
 	sql PostgresSql
+	sso Sso
 }
 
 func New(
 	log *slog.Logger,
 	val *validator.Validate,
 	sql PostgresSql,
+	sso Sso,
 ) *Auth {
 	return &Auth{
 		log: log,
 		val: val,
 		sql: sql,
+		sso: sso,
 	}
 }
 
@@ -48,7 +56,7 @@ func (a *Auth) CreateStudent(
 ) (*domain.Student, error) {
 	const op = "auth.CreateStudent"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("unauthorized attempt", "op", op, "error", err)
 		return nil, domain.ErrUnauthorized
@@ -85,7 +93,7 @@ func (a *Auth) GetStudent(
 ) (*domain.Student, error) {
 	const op = "auth.GetStudent"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("unauthorized attempt", "op", op, "error", err)
 		return nil, domain.ErrUnauthorized
@@ -110,7 +118,7 @@ func (a *Auth) GetStudent(
 func (a *Auth) ListStudentsWithoutClass(ctx context.Context) ([]domain.Student, error) {
 	const op = "auth.ListStudents"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("unauthorized attempt", "op", op, "error", err)
 		return nil, domain.ErrUnauthorized
@@ -134,7 +142,7 @@ func (a *Auth) ListStudents(
 ) ([]domain.Student, error) {
 	const op = "auth.ListStudents"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("unauthorized attempt", "op", op, "error", err)
 		return nil, domain.ErrUnauthorized
@@ -158,7 +166,7 @@ func (a *Auth) UpdateStudent(
 ) (*domain.Student, error) {
 	const op = "auth.UpdateStudent"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("unauthorized attempt", "op", op, "error", err)
 		return nil, domain.ErrUnauthorized
@@ -195,7 +203,7 @@ func (a *Auth) DeleteStudent(
 ) error {
 	const op = "auth.DeleteStudent"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("unauthorized attempt", "op", op, "error", err)
 		return domain.ErrUnauthorized

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/EliasBlind/EduFlow/internal/journal_service/domain"
+	usercalimas "github.com/EliasBlind/EduFlow/pkg/user_calimas"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
@@ -41,7 +42,7 @@ func New(
 
 func (a *Auth) RecordGrade(ctx context.Context, params *domain.RecordGrade) (*domain.Grade, error) {
 	const op = "auth.RecordGrade"
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("unauthorized attempt", "op", op)
 		return nil, domain.ErrUnauthorized
@@ -78,7 +79,7 @@ func (a *Auth) ListGrades(
 	const op = "auth.ListGrades"
 	log := a.log.With("op", op, "student_id", params.StudentID, "class_id", params.ClassID)
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		log.Warn("unauthorized attempt")
 		return nil, domain.ErrUnauthorized
@@ -104,7 +105,7 @@ func (a *Auth) UpdateGrade(
 		"op", op,
 		"Note", params.Note)
 
-	_, err := domain.GetUserClaims(ctx)
+	_, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		log.Warn("unauthorized attempt")
 		return nil, domain.ErrUnauthorized
@@ -133,7 +134,7 @@ func (a *Auth) DeleteGrade(
 	const op = "auth.DeleteGrade"
 	log := a.log.With("op", op, "id", id)
 
-	_, err := domain.GetUserClaims(ctx)
+	_, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		log.Warn("unauthorized attempt")
 		return domain.ErrUnauthorized

@@ -38,6 +38,20 @@ func RefreshToDomain(s *ssov1.RefreshRequest) *domain.RefreshRequest {
 	}
 }
 
+func UserToDomain(s *ssov1.User) (*domain.User, error) {
+
+	parsedUUID, err := uuid.Parse(s.Id)
+	if err != nil {
+		return nil, domain.ErrInvalidData
+	}
+
+	return &domain.User{
+		Id:    parsedUUID,
+		Email: s.Email,
+		Login: s.Login,
+	}, nil
+}
+
 func SetRoleToDomain(s *ssov1.SetRoleRequest) (*domain.User, error) {
 
 	parsedUUID, err := uuid.Parse(s.UserId)

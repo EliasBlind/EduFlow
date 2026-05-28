@@ -17,6 +17,7 @@ type Config struct {
 	Postgresql PostgresqlConfig `yaml:"postgresql" validate:"required"`
 	GRPC       GRPCConfig       `yaml:"grpc" validate:"required"`
 	Locale     LocaleConfig     `yaml:"locale" validate:"required"`
+	Sso        SsoConfig        `yaml:"sso" validate:"required"`
 }
 
 type PostgresqlConfig struct {
@@ -39,6 +40,11 @@ type GRPCConfig struct {
 type LocaleConfig struct {
 	DefaultLang string `yaml:"default_lang"`
 	Path        string `yaml:"path"`
+}
+
+type SsoConfig struct {
+	Host string `yaml:"host" validate:"required"`
+	Port int    `yaml:"port" validate:"required,gte=1,lte=65535"`
 }
 
 func MustLoad() *Config {

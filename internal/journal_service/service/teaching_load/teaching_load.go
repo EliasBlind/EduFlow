@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/EliasBlind/EduFlow/internal/journal_service/domain"
+	usercalimas "github.com/EliasBlind/EduFlow/pkg/user_calimas"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
@@ -47,7 +48,7 @@ func (a *Auth) CreateTeachingLoad(
 ) (*domain.TeachingLoad, error) {
 	const op = "auth.CreateTeachingLoad"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("unauthorized attempt", "op", op, "error", err)
 		return nil, domain.ErrUnauthorized
@@ -89,7 +90,7 @@ func (a *Auth) GetTeachingLoad(
 ) (*domain.TeachingLoad, error) {
 	const op = "auth.GetTeachingLoad"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("unauthorized attempt", "op", op, "error", err)
 		return nil, domain.ErrUnauthorized
@@ -117,7 +118,7 @@ func (a *Auth) ListTeachingLoad(
 ) ([]domain.TeachingLoad, error) {
 	const op = "auth.ListTeachingLoad"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("unauthorized attempt", "op", op, "error", err)
 		return nil, domain.ErrUnauthorized
@@ -146,7 +147,7 @@ func (a *Auth) UpdateTeachingLoad(
 ) (*domain.TeachingLoad, error) {
 	const op = "auth.UpdateTeachingLoad"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("unauthorized attempt", "op", op, "error", err)
 		return nil, domain.ErrUnauthorized
@@ -183,7 +184,7 @@ func (a *Auth) DeleteTeachingLoad(
 ) error {
 	const op = "auth.DeleteTeachingLoad"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("unauthorized attempt", "op", op, "error", err)
 		return domain.ErrUnauthorized

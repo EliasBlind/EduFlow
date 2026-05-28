@@ -16,3 +16,7 @@ grpc:
 locale:
   default_lang: en
   path: "internal/journal_service/locales"
+
+sso:
+  host: "sso-service"
+  port: 4042

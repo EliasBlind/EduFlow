@@ -12,7 +12,7 @@ REPORT_PATH         = docs/reports
 
 # Binaries
 ENVGEN              = .bin/envgen
-JOURNAL_SERVICE     = .bin/journal_service
+JOURNAL_SERVICE_BIN     = .bin/journal_service
 SSO_SERVICE_BIN     = .bin/sso_service
 
 # Services
@@ -36,17 +36,11 @@ build: journal-build sso-build
 
 ## journal-build: Compile the journal server binary
 journal-build:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o $(JOURNAL_SERVICE) ./cmd/sso_service/server/main.go 
-
-journal-run:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o $(SSO_SERVICE_BIN) ./cmd/journal_service/server/main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o $(JOURNAL_SERVICE_BIN) ./cmd/journal_service/server/main.go 
 
 ## sso-build: Compile the SSO server binary (Исправлено имя выходного файла)
 sso-build:
-	go build -o $(SSO_SERVICE_BIN) ./cmd/sso_service/server/main.go
-
-sso-run:
-	-go run ./cmd/sso_service/server/main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o $(SSO_SERVICE_BIN) ./cmd/sso_service/server/main.go 
 
 ## clean: Remove generated files and binaries
 clean:
@@ -67,9 +61,10 @@ gen: journal-gen-proto journal-gen-sqlc sso-gen-proto sso-gen-sqlc
 journal-gen-proto:
 	mkdir -p $(GEN_OUT)
 	protoc --proto_path=protos \
-		--go_out=$(GEN_OUT) --go_opt=paths=source_relative \
-		--go-grpc_out=$(GEN_OUT) --go-grpc_opt=paths=source_relative \
-		$(JOURNAL_PROTO_SRC)/*.proto
+	       --proto_path=external/googleapis \
+	       --go_out=$(GEN_OUT) --go_opt=paths=source_relative \
+	       --go-grpc_out=$(GEN_OUT) --go-grpc_opt=paths=source_relative \
+	       protos/journal/v1/*.proto
 
 journal-gen-sqlc:
 	@echo "Generating SQLC for Journal Service..."
@@ -78,16 +73,23 @@ journal-gen-sqlc:
 sso-gen-proto:
 	mkdir -p $(GEN_OUT)
 	protoc --proto_path=protos \
-		--go_out=$(GEN_OUT) --go_opt=module=$(MODULE)/pkg/protos/gen \
-		--go-grpc_out=$(GEN_OUT) --go-grpc_opt=module=$(MODULE)/pkg/protos/gen \
-		$(SSO_PROTO_SRC)/*.proto
+	       --proto_path=external/googleapis \
+	       --go_out=$(GEN_OUT) --go_opt=module=$(MODULE)/pkg/protos/gen \
+	       --go-grpc_out=$(GEN_OUT) --go-grpc_opt=module=$(MODULE)/pkg/protos/gen \
+	       $(SSO_PROTO_SRC)/*.proto
 
 sso-gen-sqlc:
 	@echo "Generating SQLC for SSO Service..."
 	cd $(SSO_DIR) && sqlc generate
 
-# Env data generate
+## proto-descriptor: Generate combined protobuf descriptor for Envoy
+proto-descriptor:
+	protoc -I protos -I external/googleapis \
+	       --descriptor_set_out=combined_descriptor.pb \
+	       --include_imports \
+	       protos/sso/v1/*.proto protos/journal/v1/*.proto
 
+# Env data generate
 key-gen: build-envgen
 	$(eval NEW_VAL := $(shell if [ -z "$(Key)" ]; then openssl rand -hex 32; else echo "$(Key)"; fi))
 	@./.bin/envgen -env="configs/journal_service/journal.env" -key="SECRET_KEY" -sed="$(NEW_VAL)"

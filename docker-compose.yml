@@ -46,7 +46,8 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./envoy.yaml:/etc/envoy/envoy.yaml:ro
+      - ./envoy.yaml:/etc/envoy/envoy.yaml
+      - ./combined_descriptor.pb:/etc/envoy/combined_descriptor.pb
     depends_on:
       - journal-service
       - sso-service

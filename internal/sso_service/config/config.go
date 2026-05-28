@@ -21,7 +21,6 @@ type Config struct {
 	SpiceDB     SpiceConfig      `yaml:"spice" validate:"required"`
 	Token       TokenConfig      `yaml:"token" validate:"required"`
 	Locale      LocaleConfig     `yaml:"locale" validate:"required"`
-	Journal     JournalConfig    `yaml:"journal"`
 }
 
 type PostgresqlConfig struct {
@@ -35,9 +34,10 @@ type PostgresqlConfig struct {
 }
 
 type GRPCConfig struct {
-	Host    string        `yaml:"host" validate:"required"`
-	Port    int           `yaml:"port" validate:"required,gte=1,lte=65535"`
-	Timeout time.Duration `yaml:"timeout" env-default:"5s"`
+	Host      string        `yaml:"host" validate:"required"`
+	Port      int           `yaml:"port" validate:"required,gte=1,lte=65535"`
+	Timeout   time.Duration `yaml:"timeout" env-default:"5s"`
+	SecretKey string        `env:"SECRET_KEY" env-required:"true"`
 }
 
 type RedisConfig struct {
@@ -74,11 +74,6 @@ type TokenConfig struct {
 type LocaleConfig struct {
 	DefaultLang string `yaml:"default_lang"`
 	Path        string `yaml:"path"`
-}
-
-type JournalConfig struct {
-	Host string `yaml:"host"`
-	Port int    `yaml:"port"`
 }
 
 func MustLoad() *Config {

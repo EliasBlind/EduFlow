@@ -16,8 +16,9 @@ type Auth interface {
 	Login(ctx context.Context, params *domain.LoginRequest) (*domain.TokenPair, error)
 	Logout(ctx context.Context, refreshToken string) (bool, error)
 	RefreshToken(ctx context.Context, params *domain.RefreshRequest) (*domain.TokenPair, error)
-	ListUsers(ctx context.Context, token string) ([]domain.User, error)
-	SetRole(ctx context.Context, token string, user *domain.User) error
+	ListUsers(ctx context.Context) ([]domain.User, error)
+	SetRole(ctx context.Context, user *domain.User) error
+	CreateStudent(ctx context.Context, user *domain.User) error
 }
 
 type serverAPI struct {
@@ -80,9 +81,8 @@ func (s *serverAPI) RefreshToken(ctx context.Context, req *ssov1.RefreshRequest)
 	return mapper.TokenPairToProto(refreshToken), nil
 }
 
-func (s *serverAPI) ListUsers(ctx context.Context, req *ssov1.TokenRequest) (*ssov1.ListUsersResponse, error) {
-	token := req.Token
-	users, err := s.auth.ListUsers(ctx, token)
+func (s *serverAPI) ListUsers(ctx context.Context, req *ssov1.ListUsersRequest) (*ssov1.ListUsersResponse, error) {
+	users, err := s.auth.ListUsers(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -90,15 +90,27 @@ func (s *serverAPI) ListUsers(ctx context.Context, req *ssov1.TokenRequest) (*ss
 }
 
 func (s *serverAPI) SetRole(ctx context.Context, req *ssov1.SetRoleRequest) (*emptypb.Empty, error) {
-	token := req.Token
 	user, err := mapper.SetRoleToDomain(req)
 	if err != nil {
 		return nil, err
 	}
-	err = s.auth.SetRole(ctx, token, user)
+	err = s.auth.SetRole(ctx, user)
 	if err != nil {
 		return nil, err
 	}
 
+	return nil, nil
+}
+
+func (s *serverAPI) CreateStudent(ctx context.Context, req *ssov1.User) (*emptypb.Empty, error) {
+	user, err := mapper.UserToDomain(req)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.auth.CreateStudent(ctx, user)
+	if err != nil {
+		return nil, err
+	}
 	return nil, nil
 }

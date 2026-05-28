@@ -14,6 +14,8 @@ require (
 	github.com/redis/go-redis/v9 v9.19.0
 	github.com/wneessen/go-mail v0.7.2
 	golang.org/x/crypto v0.50.0
+	google.golang.org/genproto/googleapis/api v0.0.0-20260522204824-7f3bc5b78da9
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260511170946-3700d4141b60
 	google.golang.org/grpc v1.80.0
 	google.golang.org/protobuf v1.36.11
 )
@@ -36,7 +38,6 @@ require (
 	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/sys v0.43.0 // indirect
 	golang.org/x/text v0.36.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260120221211-b8f7ae30c516 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	olympos.io/encoding/edn v0.0.0-20201019073823-d3554ca0b0a3 // indirect
 )

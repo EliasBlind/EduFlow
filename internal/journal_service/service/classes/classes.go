@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/EliasBlind/EduFlow/internal/journal_service/domain"
+	usercalimas "github.com/EliasBlind/EduFlow/pkg/user_calimas"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
@@ -44,7 +45,7 @@ func (a *Auth) CreateClass(
 ) (*domain.Class, error) {
 	const op = "auth.CreateClass"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("unauthorized attempt", "op", op)
 		return nil, domain.ErrUnauthorized
@@ -87,7 +88,7 @@ func (a *Auth) GetClass(
 ) (*domain.Class, error) {
 	const op = "auth.GetClass"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("failed to get user claims", "op", op, "error", err)
 		return nil, domain.ErrUnauthorized
@@ -117,7 +118,7 @@ func (a *Auth) GetClass(
 func (a *Auth) ListClasses(ctx context.Context) ([]domain.Class, error) {
 	const op = "auth.ListClasses"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("failed to get user claims", "op", op, "error", err)
 		return nil, domain.ErrUnauthorized
@@ -150,7 +151,7 @@ func (a *Auth) ListTeacherClasses(
 ) ([]domain.Class, error) {
 	const op = "auth.ListTeacherClasses"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("failed to get user claims", "op", op, "error", err)
 		return nil, domain.ErrUnauthorized
@@ -186,7 +187,7 @@ func (a *Auth) UpdateClass(
 ) (*domain.Class, error) {
 	const op = "auth.UpdateClass"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("failed to get user claims", "op", op, "error", err)
 		return nil, domain.ErrUnauthorized
@@ -231,7 +232,7 @@ func (a *Auth) DeleteClass(
 ) error {
 	const op = "auth.DeleteClass"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("failed to get user claims", "op", op, "error", err)
 		return domain.ErrUnauthorized

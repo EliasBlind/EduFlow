@@ -14,6 +14,7 @@ import (
 	"github.com/EliasBlind/EduFlow/internal/sso_service/config"
 	"github.com/EliasBlind/EduFlow/internal/sso_service/domain"
 	"github.com/EliasBlind/EduFlow/pkg/roles"
+	usercalimas "github.com/EliasBlind/EduFlow/pkg/user_calimas"
 	"github.com/akara-io/zxcvbn"
 	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v5"
@@ -58,22 +59,6 @@ type Mailer interface {
 	SendVerificationCode(ctx context.Context, email, code string) error
 }
 
-type JournalService interface {
-	CreateStudent(
-		ctx context.Context,
-		jwt string,
-		id uuid.UUID,
-		name string,
-	) error
-
-	CreateTeacher(
-		ctx context.Context,
-		jwt string,
-		id uuid.UUID,
-		name string,
-	) error
-}
-
 type pendingUser struct {
 	Params *domain.User
 	AppID  int
@@ -81,13 +66,12 @@ type pendingUser struct {
 }
 
 type Auth struct {
-	log     *slog.Logger
-	cfg     *config.TokenConfig
-	val     *validator.Validate
-	redis   Redis
-	sql     PostgresSql
-	mailer  Mailer
-	journal JournalService
+	log    *slog.Logger
+	cfg    *config.TokenConfig
+	val    *validator.Validate
+	redis  Redis
+	sql    PostgresSql
+	mailer Mailer
 }
 
 func New(
@@ -97,18 +81,16 @@ func New(
 	redis Redis,
 	sql PostgresSql,
 	mailer Mailer,
-	journal JournalService,
 ) *Auth {
 	gob.Register(domain.RegisterRequest{})
 	gob.Register(pendingUser{})
 	return &Auth{
-		log:     log,
-		cfg:     cfg,
-		val:     val,
-		redis:   redis,
-		mailer:  mailer,
-		sql:     sql,
-		journal: journal,
+		log:    log,
+		cfg:    cfg,
+		val:    val,
+		redis:  redis,
+		mailer: mailer,
+		sql:    sql,
 	}
 }
 
@@ -372,8 +354,8 @@ func (a *Auth) RefreshToken(ctx context.Context, params *domain.RefreshRequest) 
 	}, nil
 }
 
-func (a *Auth) ListUsers(ctx context.Context, token string) ([]domain.User, error) {
-	user, err := a.validateToken(token)
+func (a *Auth) ListUsers(ctx context.Context) ([]domain.User, error) {
+	user, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -389,21 +371,20 @@ func (a *Auth) ListUsers(ctx context.Context, token string) ([]domain.User, erro
 	return res, nil
 }
 
-func (a *Auth) SetRole(ctx context.Context, token string, user *domain.User) error {
+func (a *Auth) SetRole(ctx context.Context, user *domain.User) error {
 	const op = "statuscodesvc.SetRole"
 
-	// Первичный логгер
 	log := a.log.With(slog.String("op", op))
 	log.Info("attempting to set user role", slog.String("target_user_id", user.Id.String()))
 
-	userReq, err := a.validateToken(token)
+	userReq, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		log.Error("token validation failed", slog.Any("err", err))
 		return err
 	}
 
-	if userReq.Role != "admin" {
-		log.Warn("access denied: user is not an admin", slog.String("admin_role", userReq.Role))
+	if !userReq.Role.IsAdmin() {
+		log.Warn("access denied: user is not an admin", slog.String("admin_role", userReq.Role.String()))
 		return domain.ErrAccessDenied
 	}
 
@@ -428,42 +409,6 @@ func (a *Auth) SetRole(ctx context.Context, token string, user *domain.User) err
 		return domain.ErrInvalidData
 	}
 
-	bgCtx := context.WithoutCancel(ctx)
-	go func() {
-		log.Info("starting asynchronous profile creation in journal service",
-			slog.String("target_user_id", user.Id.String()),
-			slog.String("target_user_login", user.Login),
-			slog.String("assigned_role", user.Role.String()),
-			slog.String("admin_user_id", userReq.ID),
-		)
-
-		if user.Role.IsStudent() {
-			err := a.journal.CreateStudent(
-				bgCtx,
-				token,
-				user.Id,
-				user.Login,
-			)
-			if err != nil {
-				log.Error("failed to async create student in journal", slog.Any("err", err))
-			} else {
-				log.Info("successfully created student in journal service")
-			}
-		} else if user.Role.IsTeacher() {
-			err := a.journal.CreateTeacher(
-				bgCtx,
-				token,
-				user.Id,
-				user.Login,
-			)
-			if err != nil {
-				log.Error("failed to async create teacher in journal", slog.Any("err", err))
-			} else {
-				log.Info("successfully created teacher in journal service")
-			}
-		}
-	}()
-
 	log.Info("updating user role in database",
 		slog.String("target_user_id", user.Id.String()),
 		slog.String("assigned_role", user.Role.String()),
@@ -476,6 +421,40 @@ func (a *Auth) SetRole(ctx context.Context, token string, user *domain.User) err
 	}
 
 	log.Info("user role successfully updated")
+	return nil
+}
+
+func (a *Auth) CreateStudent(
+	ctx context.Context,
+	user *domain.User,
+) error {
+	const op = "auth.CreateStudent"
+
+	userReq, err := usercalimas.GetUserClaims(ctx)
+	if err != nil {
+		return domain.ErrAccessDenied
+	}
+
+	log := a.log.With(
+		slog.String("op", op),
+		slog.String("user_id", user.Id.String()),
+	)
+
+	if !userReq.Role.IsAdmin() {
+		log.Warn("access denied: user is not an admin", slog.String("admin_role", userReq.Role.String()))
+		return domain.ErrAccessDenied
+	}
+
+	if err := a.val.Struct(user); err != nil {
+		log.Warn("invalid request", slog.Any("err", err))
+		return domain.ErrInvalidData
+	}
+
+	_, err = a.sql.CreateUser(ctx, user)
+	if err != nil {
+		log.Error("failed to create user in database", slog.Any("err", err))
+		return domain.ErrInternal
+	}
 	return nil
 }
 
@@ -607,18 +586,4 @@ func (a *Auth) generateToken(person *domain.User) (string, error) {
 	}
 
 	return tokenString, nil
-}
-
-func (a *Auth) validateToken(tokenStr string) (*domain.UserClaims, error) {
-	var claims domain.UserClaims
-
-	token, err := jwt.ParseWithClaims(tokenStr, &claims, func(token *jwt.Token) (any, error) {
-		return []byte(a.cfg.SecretKey), nil
-	})
-
-	if err != nil || !token.Valid {
-		return nil, domain.ErrUnauthenticated
-	}
-
-	return &claims, nil
 }

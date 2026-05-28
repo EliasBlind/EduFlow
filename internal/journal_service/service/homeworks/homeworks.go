@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/EliasBlind/EduFlow/internal/journal_service/domain"
+	usercalimas "github.com/EliasBlind/EduFlow/pkg/user_calimas"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
@@ -40,7 +41,7 @@ func (a *Auth) RecordHomework(
 ) (*domain.Homework, error) {
 	const op = "auth.RecordHomework"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("unauthorized attempt", "op", op, "error", err)
 		return nil, domain.ErrUnauthorized
@@ -77,7 +78,7 @@ func (a *Auth) UpdateHomework(
 ) (*domain.Homework, error) {
 	const op = "auth.UpdateHomework"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("unauthorized attempt", "op", op, "error", err)
 		return nil, domain.ErrUnauthorized
@@ -114,7 +115,7 @@ func (a *Auth) ListHomeworks(
 ) ([]domain.Homework, error) {
 	const op = "auth.ListHomeworks"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("unauthorized attempt", "op", op, "error", err)
 		return nil, domain.ErrUnauthorized
@@ -148,7 +149,7 @@ func (a *Auth) DeleteHomework(
 ) error {
 	const op = "auth.DeleteHomework"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("unauthorized attempt", "op", op, "error", err)
 		return domain.ErrUnauthorized

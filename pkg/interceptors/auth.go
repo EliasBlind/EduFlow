@@ -1,11 +1,11 @@
-package grpcapp
+package interceptors
 
 import (
 	"context"
 	"log/slog"
 	"strings"
 
-	"github.com/EliasBlind/EduFlow/internal/journal_service/domain"
+	usercalimas "github.com/EliasBlind/EduFlow/pkg/user_calimas"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -13,7 +13,7 @@ import (
 )
 
 type TokenParser interface {
-	ParseToken(token string) (*domain.UserClaims, error)
+	ParseToken(token string) (*usercalimas.UserClaims, error)
 }
 
 func UnaryAuthInterceptor(parser TokenParser, log *slog.Logger) grpc.UnaryServerInterceptor {
@@ -33,13 +33,13 @@ func UnaryAuthInterceptor(parser TokenParser, log *slog.Logger) grpc.UnaryServer
 		md, ok := metadata.FromIncomingContext(ctx)
 		if !ok {
 			log.Warn("unauthenticated: metadata is missing")
-			return nil, status.Error(codes.Unauthenticated, "metadata is not provided")
+			return handler(ctx, req)
 		}
 
 		authHeader, ok := md["authorization"]
 		if !ok || len(authHeader) == 0 {
-			log.Warn("unauthenticated: authorization header is missing")
-			return nil, status.Error(codes.Unauthenticated, "authorization token is not provided")
+			log.Info("unauthenticated: authorization header is missing")
+			return handler(ctx, req)
 		}
 
 		parts := strings.Split(authHeader[0], " ")
@@ -59,7 +59,7 @@ func UnaryAuthInterceptor(parser TokenParser, log *slog.Logger) grpc.UnaryServer
 			slog.String("role", claims.Role.String()),
 		)
 
-		newCtx := domain.ContextWithClaims(ctx, claims)
+		newCtx := usercalimas.ContextWithClaims(ctx, claims)
 
 		return handler(newCtx, req)
 	}

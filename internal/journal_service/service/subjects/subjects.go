@@ -7,6 +7,7 @@ import (
 	"log/slog"
 
 	"github.com/EliasBlind/EduFlow/internal/journal_service/domain"
+	usercalimas "github.com/EliasBlind/EduFlow/pkg/user_calimas"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
@@ -45,7 +46,7 @@ func (a *Auth) CreateSubject(
 ) (*domain.Subject, error) {
 	const op = "auth.CreateSubject"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("unauthorized attempt", "op", op, "error", err)
 		return nil, domain.ErrUnauthorized
@@ -81,7 +82,7 @@ func (a *Auth) UpdateSubject(
 ) (*domain.Subject, error) {
 	const op = "auth.UpdateSubject"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("unauthorized attempt", "op", op, "error", err)
 		return nil, domain.ErrUnauthorized
@@ -118,7 +119,7 @@ func (a *Auth) DeleteSubject(
 ) error {
 	const op = "auth.DeleteSubject"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("unauthorized attempt", "op", op, "error", err)
 		return domain.ErrUnauthorized

@@ -1,7 +1,8 @@
-package domain
+package usercalimas
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/EliasBlind/EduFlow/pkg/roles"
 	"github.com/google/uuid"
@@ -22,7 +23,7 @@ func ContextWithClaims(ctx context.Context, claims *UserClaims) context.Context 
 func GetUserClaims(ctx context.Context) (*UserClaims, error) {
 	claims, ok := ctx.Value(ctxKey{}).(*UserClaims)
 	if !ok || claims == nil {
-		return nil, ErrUnauthorized
+		return nil, fmt.Errorf("not found")
 	}
 	return claims, nil
 }

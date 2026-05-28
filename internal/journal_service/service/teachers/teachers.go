@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/EliasBlind/EduFlow/internal/journal_service/domain"
+	usercalimas "github.com/EliasBlind/EduFlow/pkg/user_calimas"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
@@ -20,17 +21,22 @@ type PostgresSql interface {
 	DeleteTeacher(ctx context.Context, id uuid.UUID) error
 }
 
+type Sso interface {
+	CreateUserSso(ctx context.Context, jwt string, user *domain.User) error
+}
+
 type Auth struct {
 	log *slog.Logger
 	val *validator.Validate
 	sql PostgresSql
+	sso Sso
 }
 
 func New(
 	log *slog.Logger,
 	val *validator.Validate,
 	sql PostgresSql,
-
+	sso Sso,
 ) *Auth {
 	return &Auth{
 		log: log,
@@ -45,7 +51,7 @@ func (a *Auth) CreateTeacher(
 ) (*domain.Teacher, error) {
 	const op = "auth.CreateTeacher"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("unauthorized attempt", "op", op, "error", err)
 		return nil, domain.ErrUnauthorized
@@ -77,7 +83,7 @@ func (a *Auth) ListTeachers(
 ) ([]domain.Teacher, error) {
 	const op = "auth.ListTeachers"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("unauthorized attempt", "op", op, "error", err)
 		return nil, domain.ErrUnauthorized
@@ -106,7 +112,7 @@ func (a *Auth) UpdateTeacher(
 ) (*domain.Teacher, error) {
 	const op = "auth.UpdateTeacher"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("unauthorized attempt", "op", op, "error", err)
 		return nil, domain.ErrUnauthorized
@@ -143,7 +149,7 @@ func (a *Auth) DeleteTeacher(
 ) error {
 	const op = "auth.DeleteTeacher"
 
-	claims, err := domain.GetUserClaims(ctx)
+	claims, err := usercalimas.GetUserClaims(ctx)
 	if err != nil {
 		a.log.Warn("unauthorized attempt", "op", op, "error", err)
 		return domain.ErrUnauthorized
