@@ -13,6 +13,7 @@ import (
 type Querier interface {
 	// Создает нового пользователя и возвращает всю строку
 	CreatePerson(ctx context.Context, arg CreatePersonParams) (Person, error)
+	CreateUsers(ctx context.Context, arg []CreateUsersParams) (int64, error)
 	DeleteAllUserSessions(ctx context.Context, userID pgtype.UUID) error
 	// Удаление токена (Logout или Refresh Token Rotation)
 	DeleteSessionByTokenID(ctx context.Context, tokenID []byte) error

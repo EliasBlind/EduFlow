@@ -3,15 +3,17 @@ package auth
 import (
 	"context"
 
+	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/emptypb"
+
 	"github.com/EliasBlind/EduFlow/internal/sso_service/domain"
 	"github.com/EliasBlind/EduFlow/internal/sso_service/mapper"
 	ssov1 "github.com/EliasBlind/EduFlow/pkg/protos/gen/sso/v1"
-	"google.golang.org/grpc"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type Auth interface {
 	Register(ctx context.Context, params *domain.RegisterRequest) error
+	CreateUsers(ctx context.Context, users []domain.User) error
 	VerifyEmail(ctx context.Context, params *domain.VerifyRequest) (*domain.TokenPair, error)
 	Login(ctx context.Context, params *domain.LoginRequest) (*domain.TokenPair, error)
 	Logout(ctx context.Context, refreshToken string) (bool, error)
@@ -43,6 +45,18 @@ func (s *serverAPI) Register(ctx context.Context, req *ssov1.RegisterRequest) (*
 	}
 
 	return &ssov1.RegisterResponse{}, nil
+}
+
+func (s *serverAPI) CreateUsers(ctx context.Context, req *ssov1.CreateUsersRequest) (*emptypb.Empty, error) {
+	params, err := mapper.UsersToDomain(req)
+	if err != nil {
+		return nil, err
+	}
+	err = s.auth.CreateUsers(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
 }
 
 func (s *serverAPI) VerifyEmail(ctx context.Context, req *ssov1.VerifyRequest) (*ssov1.TokenPair, error) {

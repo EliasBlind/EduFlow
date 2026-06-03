@@ -21,7 +21,7 @@ func StudentToProto(params *domain.Student) *journalv1.Student {
 func ListStudentsToProto(students []domain.Student) *journalv1.ListStudentsResponse {
 	return &journalv1.ListStudentsResponse{
 		TotalCount: uint32(len(students)),
-		Students:   pkgmapper.MapSlice(students, StudentToProto),
+		Students:   pkgmapper.MapSliceRef(students, StudentToProto),
 	}
 }
 
@@ -37,7 +37,7 @@ func TeacherToProto(params *domain.Teacher) *journalv1.Teacher {
 func ListTeachersToProto(teacher []domain.Teacher) *journalv1.ListTeachersResponse {
 	return &journalv1.ListTeachersResponse{
 		TotalCount: uint32(len(teacher)),
-		Teachers:   pkgmapper.MapSlice(teacher, TeacherToProto),
+		Teachers:   pkgmapper.MapSliceRef(teacher, TeacherToProto),
 	}
 }
 
@@ -55,7 +55,7 @@ func ClassToProto(params *domain.Class) *journalv1.Class {
 func ListTeacherClassesToProto(classes []domain.Class) *journalv1.ListClassesResponse {
 	return &journalv1.ListClassesResponse{
 		TotalCount: uint32(len(classes)),
-		Classes:    pkgmapper.MapSlice(classes, ClassToProto),
+		Classes:    pkgmapper.MapSliceRef(classes, ClassToProto),
 	}
 }
 
@@ -103,7 +103,7 @@ func GradeToProto(params *domain.Grade) *journalv1.Grade {
 func GradesToProto(grades []domain.Grade) *journalv1.ListGradesResponse {
 	return &journalv1.ListGradesResponse{
 		TotalCount: uint32(len(grades)),
-		Grades:     pkgmapper.MapSlice(grades, GradeToProto),
+		Grades:     pkgmapper.MapSliceRef(grades, GradeToProto),
 	}
 }
 
@@ -125,7 +125,7 @@ func HomeworkToProto(params *domain.Homework) *journalv1.Homework {
 func ListHomeworkToProto(homeworks []domain.Homework) *journalv1.ListHomeworkResponse {
 	return &journalv1.ListHomeworkResponse{
 		TotalCount: uint32(len(homeworks)),
-		Homeworks:  pkgmapper.MapSlice(homeworks, HomeworkToProto),
+		Homeworks:  pkgmapper.MapSliceRef(homeworks, HomeworkToProto),
 	}
 }
 
@@ -141,7 +141,7 @@ func StatusCodeToProto(params *domain.StatusCode) *journalv1.StatusCode {
 func ListStatusCodeToProto(statusCodes []domain.StatusCode) *journalv1.ListStatusCodeResponse {
 	return &journalv1.ListStatusCodeResponse{
 		TotalCount:  uint32(len(statusCodes)),
-		StatusCodes: pkgmapper.MapSlice(statusCodes, StatusCodeToProto),
+		StatusCodes: pkgmapper.MapSliceRef(statusCodes, StatusCodeToProto),
 	}
 }
 
@@ -159,24 +159,24 @@ func TeachingLoadToProto(params *domain.TeachingLoad) *journalv1.TeachingLoad {
 func ListTeachingLoadToProto(teachingLoad []domain.TeachingLoad) *journalv1.ListTeachingLoadResponse {
 	return &journalv1.ListTeachingLoadResponse{
 		TotalCount:    uint32(len(teachingLoad)),
-		TeachingLoads: pkgmapper.MapSlice(teachingLoad, TeachingLoadToProto),
+		TeachingLoads: pkgmapper.MapSliceRef(teachingLoad, TeachingLoadToProto),
 	}
 }
 
 func SubjectsToProto(subjects []domain.Subject) *journalv1.ListSubjectsResponse {
 
-	res := pkgmapper.MapSlice(
+	res := pkgmapper.MapSliceRef(
 		subjects,
 		func(subject *domain.Subject) *journalv1.Subject {
 			return &journalv1.Subject{
-				Id: subject.ID.String(),
+				Id:       subject.ID.String(),
 				FullName: subject.FullName,
 			}
 		},
 	)
 	return &journalv1.ListSubjectsResponse{
 		TotalCount: uint32(len(res)),
-		Subjects: res,
+		Subjects:   res,
 	}
 }
 

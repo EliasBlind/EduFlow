@@ -9,6 +9,17 @@ INSERT INTO person (
 )
 RETURNING id, email, username, password_hash, user_role;
 
+-- name: CreateUsers :copyfrom
+INSERT INTO person (
+    id,
+    email,
+    username,
+    password_hash,
+    user_role
+) VALUES (
+    $1, $2, $3, $4, $5
+);
+
 -- name: GetPersonByLogin :one
 -- Поиск для авторизации
 SELECT

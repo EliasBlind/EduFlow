@@ -143,7 +143,7 @@ func (s *Storage) ListHomeworks(
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	return mapper.MapSlice(
+	return mapper.MapSliceRef(
 		homeworks,
 		func(f *sqlgen.ListHomeworksRow) domain.Homework {
 			return domain.Homework{

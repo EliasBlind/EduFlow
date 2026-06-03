@@ -5,7 +5,6 @@ go 1.26.1
 require (
 	github.com/akara-io/zxcvbn v1.2.0
 	github.com/go-playground/validator/v10 v10.30.1
-	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/uuid v1.6.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
@@ -14,8 +13,8 @@ require (
 	github.com/redis/go-redis/v9 v9.19.0
 	github.com/wneessen/go-mail v0.7.2
 	golang.org/x/crypto v0.50.0
-	google.golang.org/genproto/googleapis/api v0.0.0-20260522204824-7f3bc5b78da9
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260511170946-3700d4141b60
+	google.golang.org/genproto/googleapis/api v0.0.0-20260526163538-3dc84a4a5aaa
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260523011958-0a33c5d7ca68
 	google.golang.org/grpc v1.80.0
 	google.golang.org/protobuf v1.36.11
 )

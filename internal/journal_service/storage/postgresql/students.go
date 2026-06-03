@@ -89,7 +89,7 @@ func (s *Storage) ListStudentsWithoutClass(ctx context.Context) ([]domain.Studen
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	return mapper.MapSlice(
+	return mapper.MapSliceRef(
 		students,
 		func(f *sqlgen.Student) domain.Student {
 			return domain.Student{
@@ -124,7 +124,7 @@ func (s *Storage) ListStudents(
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	return mapper.MapSlice(
+	return mapper.MapSliceRef(
 		students,
 		func(f *sqlgen.Student) domain.Student {
 			return domain.Student{

@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"log/slog"
 
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/EliasBlind/EduFlow/internal/journal_service/config"
 	"github.com/EliasBlind/EduFlow/internal/journal_service/domain"
 	ssov1 "github.com/EliasBlind/EduFlow/pkg/protos/gen/sso/v1"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/status"
 )
 
 type Auth struct {
@@ -52,31 +52,21 @@ func (a *Auth) CreateUserSso(
 	md := metadata.Pairs("authorization", "Bearer "+jwt)
 	ctx = metadata.NewOutgoingContext(ctx, md)
 
-	_, err := a.ssoRole.CreateStudent(
+	_, err := a.ssoRole.CreateUsers(
 		ctx,
-		&ssov1.User{
-			Id:    user.ID.String(),
-			Login: user.Login,
-			Email: user.Email,
-			Role:  user.Role.String(),
+		&ssov1.CreateUsersRequest{
+			Users: []*ssov1.User{
+				{
+					Id:    proto.String(user.ID.String()),
+					Login: user.Login,
+					Email: user.Email,
+					Role:  user.Role.String(),
+				},
+			},
 		},
 	)
 
 	if err != nil {
-		st, ok := status.FromError(err)
-		if ok && st.Code() == codes.AlreadyExists {
-			a.log.Info("user already exists in SSO, skipping creation",
-				slog.String("user_id", user.ID.String()),
-			)
-			_, err = a.ssoRole.SetRole(ctx, &ssov1.SetRoleRequest{
-				UserId: user.ID.String(),
-				Role:   user.Role.String(),
-			})
-
-			if err == nil {
-				return nil
-			}
-		}
 		a.log.Error("journalv1.CreateStudent grpc call failed", slog.Any("err", err))
 		return domain.ErrInternal
 	}

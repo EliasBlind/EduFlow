@@ -104,7 +104,7 @@ func (s *Storage) ListClasses(ctx context.Context) ([]domain.Class, error) {
 		return nil, err
 	}
 
-	return mapper.MapSlice(
+	return mapper.MapSliceRef(
 		classes,
 		func(f *sqlgen.Class) domain.Class {
 			return domain.Class{
@@ -140,7 +140,7 @@ func (s *Storage) ListTeacherClasses(
 		return nil, err
 	}
 
-	return mapper.MapSlice(
+	return mapper.MapSliceRef(
 		classes,
 		func(f *sqlgen.Class) domain.Class {
 			return domain.Class{

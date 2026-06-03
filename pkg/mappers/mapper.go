@@ -3,12 +3,26 @@ package pkgmapper
 import (
 	"time"
 
-	"github.com/EliasBlind/EduFlow/internal/journal_service/domain"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+
+	"github.com/EliasBlind/EduFlow/internal/journal_service/domain"
 )
 
-func MapSlice[F any, T any](items []F, mapper func(*F) T) []T {
+func MapSliceRef[F any, T any](items []F, mapper func(*F) T) []T {
+	if items == nil {
+		return nil
+	}
+
+	res := make([]T, len(items))
+
+	for i := range items {
+		res[i] = mapper(&items[i])
+	}
+	return res
+}
+
+func MapSlice[F any, T any](items []F, mapper func(F) T) []T {
 	if items == nil {
 		return nil
 	}
@@ -16,7 +30,7 @@ func MapSlice[F any, T any](items []F, mapper func(*F) T) []T {
 	res := make([]T, len(items))
 
 	for i, v := range items {
-		res[i] = mapper(&v)
+		res[i] = mapper(v)
 	}
 	return res
 }

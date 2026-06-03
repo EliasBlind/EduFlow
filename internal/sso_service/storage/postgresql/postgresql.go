@@ -8,15 +8,16 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
+
 	"github.com/EliasBlind/EduFlow/internal/sso_service/config"
 	"github.com/EliasBlind/EduFlow/internal/sso_service/domain"
 	"github.com/EliasBlind/EduFlow/internal/sso_service/storage/sqlgen"
 	pkgmapper "github.com/EliasBlind/EduFlow/pkg/mappers"
 	"github.com/EliasBlind/EduFlow/pkg/roles"
-	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Storage struct {
@@ -105,6 +106,40 @@ func (s *Storage) CreateUser(ctx context.Context, params *domain.User) (uuid.UUI
 	log.Info("user created successfully", "user_id", res.String())
 
 	return res, nil
+}
+
+func (s *Storage) CreateUsers(
+	ctx context.Context,
+	users []domain.User) error {
+	const op = "storage.postgresql.CreateUsers"
+	log := s.log.With(
+		"op", op,
+	)
+
+	_, err := s.queries.CreateUsers(ctx, pkgmapper.MapSlice(
+		users,
+		func(user domain.User) sqlgen.CreateUsersParams {
+
+			arg := sqlgen.CreateUsersParams{
+				Email:        user.Email,
+				Username:     user.Login,
+				PasswordHash: user.PasswordHash,
+				UserRole:         user.Role.String(),
+			}
+			if user.Id != uuid.Nil {
+				arg.ID = pkgmapper.ToPgUUID(user.Id)
+			}
+			return arg
+		},
+	))
+	if err != nil {
+		log.Error("failed to create users in database", "error", err)
+		return domain.ErrInternal
+	}
+
+	log.Info("users created successfully")
+
+	return nil
 }
 
 func (s *Storage) GetPersonByLogin(ctx context.Context, login string) (*domain.User, error) {
@@ -253,7 +288,7 @@ func (s *Storage) ListUsers(ctx context.Context) ([]domain.User, error) {
 		return nil, domain.ErrInternal
 	}
 
-	return pkgmapper.MapSlice(
+	return pkgmapper.MapSliceRef(
 		users,
 		func(user *sqlgen.ListUsersRow) domain.User {
 			role := roles.GetRole(user.UserRole)

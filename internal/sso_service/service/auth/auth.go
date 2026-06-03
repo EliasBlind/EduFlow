@@ -11,16 +11,17 @@ import (
 	"strings"
 	"time"
 
-	"github.com/EliasBlind/EduFlow/internal/sso_service/config"
-	"github.com/EliasBlind/EduFlow/internal/sso_service/domain"
-	"github.com/EliasBlind/EduFlow/pkg/roles"
-	usercalimas "github.com/EliasBlind/EduFlow/pkg/user_calimas"
 	"github.com/akara-io/zxcvbn"
 	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"golang.org/x/crypto/bcrypt"
+
+	"github.com/EliasBlind/EduFlow/internal/sso_service/config"
+	"github.com/EliasBlind/EduFlow/internal/sso_service/domain"
+	"github.com/EliasBlind/EduFlow/pkg/roles"
+	usercalimas "github.com/EliasBlind/EduFlow/pkg/user_calimas"
 )
 
 type PostgresSql interface {
@@ -29,6 +30,8 @@ type PostgresSql interface {
 	GetPersonByLogin(ctx context.Context, login string) (*domain.User, error)
 
 	GetPersonById(ctx context.Context, userId uuid.UUID) (*domain.User, error)
+
+	CreateUsers(ctx context.Context, users []domain.User) error
 
 	UserExist(ctx context.Context, login string) (bool, error)
 
@@ -150,6 +153,33 @@ func (a *Auth) Register(
 	go a.sendEmail(params.Email, code)
 
 	log.Info("registration initiated, waiting for confirmation")
+	return nil
+}
+
+func (a *Auth) CreateUsers(ctx context.Context, users []domain.User) error {
+	const op = "auth.CreateUsers"
+	log := a.log.With(
+		"op", op,
+	)
+
+	user, err := usercalimas.GetUserClaims(ctx)
+	if err != nil {
+		log.Error("token validation failed", slog.Any("err", err))
+		return domain.ErrInternal
+	}
+
+	if !user.Role.IsAdmin() {
+		log.Warn("access denied: user is not an admin", slog.String("admin_role", user.Role.String()))
+		return domain.ErrAccessDenied
+	}
+
+	err = a.sql.CreateUsers(ctx, users)
+	if err != nil {
+		log.Error("failed to create users in database", slog.Any("err", err))
+		return domain.ErrInternal
+	}
+
+	log.Info("users created successfully")
 	return nil
 }
 
@@ -360,7 +390,7 @@ func (a *Auth) ListUsers(ctx context.Context) ([]domain.User, error) {
 		return nil, err
 	}
 
-	if user.Role != "admin" {
+	if !user.Role.IsAdmin() {
 		return nil, domain.ErrAccessDenied
 	}
 

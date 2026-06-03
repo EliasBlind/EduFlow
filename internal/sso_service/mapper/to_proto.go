@@ -14,9 +14,10 @@ func TokenPairToProto(s *domain.TokenPair) *ssov1.TokenPair {
 }
 
 func UsersToProto(users []domain.User) *ssov1.ListUsersResponse {
-	result := pkgmapper.MapSlice(users, func(user *domain.User) *ssov1.User {
+	result := pkgmapper.MapSliceRef(users, func(user *domain.User) *ssov1.User {
+		id := user.Id.String()
 		return &ssov1.User{
-			Id:    user.Id.String(),
+			Id:    &id,
 			Login: user.Login,
 			Email: user.Email,
 			Role:  user.Role.String(),

@@ -80,7 +80,7 @@ func (s *Storage) ListStatusCode(
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	return mapper.MapSlice(
+	return mapper.MapSliceRef(
 		statusCodes,
 		func(f *sqlgen.StatusCode) domain.StatusCode {
 			return domain.StatusCode{

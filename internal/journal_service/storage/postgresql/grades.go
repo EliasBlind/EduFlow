@@ -151,7 +151,7 @@ func (s *Storage) GetGrades(
 
 	log.Info("successfully fetched grades list", slog.Int("count", len(grades)))
 
-	return mapper.MapSlice(
+	return mapper.MapSliceRef(
 		grades,
 		func(f *sqlgen.GetGradesRow) domain.Grade {
 			var scorePtr *uint32

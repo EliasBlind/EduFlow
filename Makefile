@@ -22,14 +22,9 @@ JOURNAL_DIR			= internal/journal_service
 DB_URL="postgres://Elias:2795749b040201cde46538c3b74b4d97@127.0.0.1:5432/edu_db?sslmode=disable"
 
 
-.PHONY: all gen clean rebuild test cover cover-html build build-all journal-build sso-build journal-run sso-run help install-deps migrate-up migrate-down
+.PHONY: all gen clean rebuild test cover cover-html build build-all journal-build sso-build journal-run sso-run help migrate-up migrate-down
 
 all: gen build
-
-## install-deps: Install protoc dependencies for Go
-install-deps:
-	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 
 ## build: Compile both server binaries
 build: journal-build sso-build
@@ -38,7 +33,7 @@ build: journal-build sso-build
 journal-build:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o $(JOURNAL_SERVICE_BIN) ./cmd/journal_service/server/main.go 
 
-## sso-build: Compile the SSO server binary (Исправлено имя выходного файла)
+## sso-build: Compile the SSO server binary
 sso-build:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o $(SSO_SERVICE_BIN) ./cmd/sso_service/server/main.go 
 
@@ -55,39 +50,34 @@ rebuild: clean
 	$(MAKE) gen
 	$(MAKE) build
 
-## gen: Generate Go code
-gen: journal-gen-proto journal-gen-sqlc sso-gen-proto sso-gen-sqlc
+## gen: Generate Go code (Использует buf вместо protoc)
+gen: buf-update proto-gen journal-gen-sqlc sso-gen-sqlc
 
-journal-gen-proto:
+buf-update:
+	@echo "Updating Buf dependencies..."
+	buf dep update
+
+proto-gen:
+	@echo "Generating Protobuf files via Buf..."
 	mkdir -p $(GEN_OUT)
-	protoc --proto_path=protos \
-	       --proto_path=external/googleapis \
-	       --go_out=$(GEN_OUT) --go_opt=paths=source_relative \
-	       --go-grpc_out=$(GEN_OUT) --go-grpc_opt=paths=source_relative \
-	       protos/journal/v1/*.proto
+	buf generate
+
+journal-gen-proto: proto-gen
+
+sso-gen-proto: proto-gen
 
 journal-gen-sqlc:
 	@echo "Generating SQLC for Journal Service..."
 	cd $(JOURNAL_DIR) && sqlc generate
 
-sso-gen-proto:
-	mkdir -p $(GEN_OUT)
-	protoc --proto_path=protos \
-	       --proto_path=external/googleapis \
-	       --go_out=$(GEN_OUT) --go_opt=module=$(MODULE)/pkg/protos/gen \
-	       --go-grpc_out=$(GEN_OUT) --go-grpc_opt=module=$(MODULE)/pkg/protos/gen \
-	       $(SSO_PROTO_SRC)/*.proto
-
 sso-gen-sqlc:
 	@echo "Generating SQLC for SSO Service..."
 	cd $(SSO_DIR) && sqlc generate
 
-## proto-descriptor: Generate combined protobuf descriptor for Envoy
-proto-descriptor:
-	protoc -I protos -I external/googleapis \
-	       --descriptor_set_out=combined_descriptor.pb \
-	       --include_imports \
-	       protos/sso/v1/*.proto protos/journal/v1/*.proto
+## proto-descriptor: Generate combined protobuf descriptor for Envoy via Buf
+proto-descriptor: buf-update
+	@echo "Generating combined protobuf descriptor via Buf..."
+	buf build -o combined_descriptor.pb --as-file-descriptor-set
 
 # Env data generate
 key-gen: build-envgen

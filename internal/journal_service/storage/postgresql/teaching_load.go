@@ -105,7 +105,7 @@ func (s *Storage) ListTeachingLoad(
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	return mapper.MapSlice(
+	return mapper.MapSliceRef(
 		loads,
 		func(f *sqlgen.TeacherSubject) domain.TeachingLoad {
 			return domain.TeachingLoad{

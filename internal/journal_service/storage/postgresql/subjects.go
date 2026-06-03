@@ -100,7 +100,7 @@ func (s *Storage) ListSubjects(ctx context.Context) ([]domain.Subject, error) {
 		log.Error("failed to delete subject", "error", err)
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
-	return pkgmapper.MapSlice(
+	return pkgmapper.MapSliceRef(
 		subjects,
 		func(f *sqlgen.Subject) domain.Subject {
 			return domain.Subject{

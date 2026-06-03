@@ -42,6 +42,14 @@ func (q *Queries) CreatePerson(ctx context.Context, arg CreatePersonParams) (Per
 	return i, err
 }
 
+type CreateUsersParams struct {
+	ID           pgtype.UUID `json:"id"`
+	Email        string      `json:"email"`
+	Username     string      `json:"username"`
+	PasswordHash []byte      `json:"password_hash"`
+	UserRole     string      `json:"user_role"`
+}
+
 const deleteAllUserSessions = `-- name: DeleteAllUserSessions :exec
 DELETE FROM refresh_sessions
 WHERE user_id = $1
