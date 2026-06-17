@@ -25,8 +25,8 @@ spice:
   timeout: 5s  
 
 token:
-  access_ttl: 90m
-  refresh_ttl: 720h
+  access_ttl: 2h
+  refresh_ttl: 770h
   verification_ttl: 3m
 
 locale:

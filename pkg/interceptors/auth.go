@@ -5,11 +5,12 @@ import (
 	"log/slog"
 	"strings"
 
-	usercalimas "github.com/EliasBlind/EduFlow/pkg/user_calimas"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+
+	usercalimas "github.com/EliasBlind/EduFlow/pkg/user_calimas"
 )
 
 type TokenParser interface {
@@ -49,13 +50,12 @@ func UnaryAuthInterceptor(parser TokenParser, log *slog.Logger) grpc.UnaryServer
 		}
 
 		claims, err := parser.ParseToken(parts[1])
-		if err != nil {
-			log.Warn("unauthenticated: token parsing failed", slog.String("error", err.Error()))
+		if err != nil || claims == nil {
+			log.Warn("unauthenticated: token parsing failed")
 			return nil, status.Error(codes.Unauthenticated, "invalid token")
 		}
 
 		log.Info("user authenticated",
-			slog.String("user_id", claims.ID.String()),
 			slog.String("role", claims.Role.String()),
 		)
 
