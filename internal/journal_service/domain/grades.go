@@ -57,5 +57,5 @@ type UpdateGrade struct {
 	Grade        *uint32    `validate:"required_without=StatusCodeID,omitempty,min=1,max=5"`
 	StatusCodeID *uuid.UUID `validate:"required_without=Grade,omitempty,uuid4"`
 
-	Note *string `validate:"omitempty,gtfield=Start"`
+	Note *string
 }

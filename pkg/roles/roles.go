@@ -6,18 +6,20 @@ const (
 	RoleTeacher Role = "teacher"
 	RoleStudent Role = "student"
 	RoleAdmin   Role = "admin"
-	RoleUnknown Role = "unknown"
+	RoleUnknown Role = ""
 )
 
 func (r Role) IsTeacher() bool { return r == RoleTeacher }
 func (r Role) IsStudent() bool { return r == RoleStudent }
 func (r Role) IsAdmin() bool   { return r == RoleAdmin }
+func (r Role) IsUnknown() bool { return r == RoleUnknown }
 
 func IsRole(role string) bool {
 	r := Role(role)
 	if r.IsTeacher() ||
 		r.IsStudent() ||
-		r.IsAdmin() {
+		r.IsAdmin() ||
+		r.IsUnknown() {
 		return true
 	}
 	return false

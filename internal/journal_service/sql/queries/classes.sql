@@ -38,18 +38,11 @@ SELECT DISTINCT
     classes.graduation_year
 FROM classes
 INNER JOIN teacher_subject ON classes.id = teacher_subject.class_id
-WHERE 
-    teacher_subject.teacher_id = $1
-    AND classes.graduation_year >= EXTRACT(YEAR FROM CURRENT_DATE)
+WHERE teacher_subject.teacher_id = $1
 ORDER BY
     classes.year_of_study DESC,
-    classes.class_name ASC
-LIMIT
-    $2
-    OFFSET
-    $3;
+    classes.class_name ASC;
 
--- name: UpdateClass :one
 -- name: UpdateClass :one
 UPDATE classes
 SET

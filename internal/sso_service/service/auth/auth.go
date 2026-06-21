@@ -1,4 +1,4 @@
- package auth
+package auth
 
 import (
 	"bytes"
@@ -20,7 +20,6 @@ import (
 
 	"github.com/EliasBlind/EduFlow/internal/sso_service/config"
 	"github.com/EliasBlind/EduFlow/internal/sso_service/domain"
-	"github.com/EliasBlind/EduFlow/pkg/roles"
 	usercalimas "github.com/EliasBlind/EduFlow/pkg/user_calimas"
 )
 
@@ -402,7 +401,7 @@ func (a *Auth) ListUsers(ctx context.Context) ([]domain.User, error) {
 }
 
 func (a *Auth) SetRole(ctx context.Context, user *domain.User) error {
-	const op = "statuscodesvc.SetRole"
+	const op = "auth.SetRole"
 
 	log := a.log.With(slog.String("op", op))
 	log.Info("attempting to set user role", slog.String("target_user_id", user.Id.String()))
@@ -418,7 +417,7 @@ func (a *Auth) SetRole(ctx context.Context, user *domain.User) error {
 		return domain.ErrAccessDenied
 	}
 
-	if user.Role == nil || *user.Role == roles.RoleUnknown {
+	if user.Role == nil {
 		log.Warn("invalid data: target user role is unknown or nil")
 		return domain.ErrInvalidData
 	}

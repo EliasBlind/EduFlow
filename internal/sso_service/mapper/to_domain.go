@@ -21,22 +21,6 @@ func RegisterToDomain(s *ssov1.RegisterRequest) *domain.RegisterRequest {
 	}
 }
 
-func UsersToDomain(s *ssov1.CreateUsersRequest) ([]domain.User, error) {
-	var err error
-	usrToDomain := func(u *ssov1.User) domain.User {
-		usr, usrErr := UserToDomain(u)
-		if usrErr != nil {
-			err = usrErr
-		}
-		return *usr
-	}
-
-	return pkgmapper.MapSlice(
-		s.Users,
-		usrToDomain,
-	), err
-}
-
 func LoginToDomain(s *ssov1.LoginRequest) *domain.LoginRequest {
 	return &domain.LoginRequest{
 		Login:    s.GetLogin(),
@@ -58,26 +42,49 @@ func RefreshToDomain(s *ssov1.RefreshRequest) *domain.RefreshRequest {
 		AppId:        int(s.AppId),
 	}
 }
-
 func UserToDomain(s *ssov1.User) (*domain.User, error) {
-	hash, err := bcrypt.GenerateFromPassword([]byte(s.Password), bcrypt.DefaultCost)
+	hash, err := bcrypt.GenerateFromPassword([]byte(s.GetPassword()), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, domain.ErrInternal
 	}
-	user := &domain.User{
-		Email:    s.Email,
-		Login:    s.Login,
-		PasswordHash: hash,
-	}
 
-	if s.Id == nil {
-		parsedUUID, err := uuid.Parse(*s.Id)
+	var id uuid.UUID
+	if s.Id != nil && s.GetId() != "" {
+		id, err = uuid.Parse(s.GetId())
 		if err != nil {
 			return nil, domain.ErrInvalidData
 		}
-		user.Id = parsedUUID
 	}
-	return user, nil
+
+	role := roles.GetRole(s.GetRole()) // ← главное: парсим роль и берём адрес
+
+	return &domain.User{
+		Id:           id,
+		Email:        s.GetEmail(),
+		Login:        s.GetLogin(),
+		PasswordHash: hash,
+		Role:         &role,
+	}, nil
+}
+
+func UsersToDomain(s *ssov1.CreateUsersRequest) ([]domain.User, error) {
+	var firstErr error
+	usrToDomain := func(u *ssov1.User) domain.User {
+		usr, err := UserToDomain(u)
+		if err != nil {
+			if firstErr == nil {
+				firstErr = err
+			}
+			return domain.User{} // не разыменовываем nil
+		}
+		return *usr
+	}
+
+	res := pkgmapper.MapSlice(s.Users, usrToDomain)
+	if firstErr != nil {
+		return nil, firstErr
+	}
+	return res, nil
 }
 
 func SetRoleToDomain(s *ssov1.SetRoleRequest) (*domain.User, error) {

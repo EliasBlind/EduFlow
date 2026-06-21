@@ -6,11 +6,12 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
+
 	"github.com/EliasBlind/EduFlow/internal/journal_service/domain"
 	"github.com/EliasBlind/EduFlow/internal/journal_service/storage/sqlgen"
 	mapper "github.com/EliasBlind/EduFlow/pkg/mappers"
-	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgconn"
 )
 
 func (s *Storage) CreateClass(
@@ -128,13 +129,7 @@ func (s *Storage) ListTeacherClasses(
 		"teacher_id", params.TeacherID,
 	)
 
-	arg := sqlgen.ListTeacherClassesParams{
-		TeacherID: mapper.ToPgUUID(params.TeacherID),
-		Limit:     int32(params.Limit),
-		Offset:    int32(params.Offset),
-	}
-
-	classes, err := s.queries.ListTeacherClasses(ctx, arg)
+	classes, err := s.queries.ListTeacherClasses(ctx, mapper.ToPgUUID(params.TeacherID))
 	if err != nil {
 		log.Error("failed to list classes", "error", err)
 		return nil, err

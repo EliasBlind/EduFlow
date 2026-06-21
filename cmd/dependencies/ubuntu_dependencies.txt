@@ -1,0 +1,12 @@
+golang-go
+docker.io
+docker-compose-v2
+build-essential
+autoconf
+libtool
+pkg-config
+cmake
+git
+libgrpc++-dev
+protobuf-compiler-grpc
+snap

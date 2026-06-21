@@ -2,8 +2,8 @@
 MODULE              = github.com/EliasBlind/EduFlow
 
 # Proto Sources
-JOURNAL_PROTO_SRC   = protos/journal/v1
-SSO_PROTO_SRC       = protos/sso/v1
+PROTO_ROOT          = protos
+GOOGLEAPIS_PATH     = third_party/googleapis
 
 # Generation and Reports
 COVER_OUT           = $(REPORT_PATH)/coverage.out
@@ -12,22 +12,29 @@ REPORT_PATH         = docs/reports
 
 # Binaries
 ENVGEN              = .bin/envgen
-JOURNAL_SERVICE_BIN     = .bin/journal_service
+JOURNAL_SERVICE_BIN = .bin/journal_service
 SSO_SERVICE_BIN     = .bin/sso_service
 
 # Services
-SSO_DIR				= internal/sso_service
-JOURNAL_DIR			= internal/journal_service
+SSO_DIR             = internal/sso_service
+JOURNAL_DIR         = internal/journal_service
 
 DB_URL="postgres://Elias:2795749b040201cde46538c3b74b4d97@127.0.0.1:5432/edu_db?sslmode=disable"
 
 
-.PHONY: all gen clean rebuild test cover cover-html build build-all journal-build sso-build journal-run sso-run help migrate-up migrate-down
+.PHONY: all gen clean rebuild test cover cover-html run build build-all journal-build sso-build \
+        journal-run sso-run help migrate-up migrate-down dependencies_install \
+        proto-deps proto-gen proto-descriptor journal-gen-sqlc sso-gen-sqlc \
+        init-submodules update_proto
 
 all: gen build
 
 ## build: Compile both server binaries
-build: journal-build sso-build
+build: dependencies_install gen journal-build sso-build
+
+run: build
+	docker compose up -d
+	$(MAKE) migrate-up
 
 ## journal-build: Compile the journal server binary
 journal-build:
@@ -37,8 +44,22 @@ journal-build:
 sso-build:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o $(SSO_SERVICE_BIN) ./cmd/sso_service/server/main.go 
 
+dependencies_install:
+	cd ./cmd/dependencies/ && bash install.sh
+
+## init-submodules: Initialize and update git submodules (if any)
+init-submodules:
+	@echo "Initializing submodules..."
+	git submodule update --init --recursive
+
+## update_proto: Update protos submodule to the latest remote commit (develop branch)
+update_proto: init-submodules
+	@echo "Updating protos submodule..."
+	git submodule update --remote --merge protos
+
 ## clean: Remove generated files and binaries
 clean:
+	docker compose down
 	rm -rf .bin/ bin/
 	rm -rf $(GEN_OUT)/*
 	rm -rf $(REPORT_PATH)
@@ -50,20 +71,31 @@ rebuild: clean
 	$(MAKE) gen
 	$(MAKE) build
 
-## gen: Generate Go code (Использует buf вместо protoc)
-gen: buf-update proto-gen journal-gen-sqlc sso-gen-sqlc
+## gen: Generate Go code (protobuf + SQLC)
+gen: proto-deps proto-gen proto-descriptor journal-gen-sqlc sso-gen-sqlc
 
-buf-update:
-	@echo "Updating Buf dependencies..."
-	buf dep update
+## proto-deps: Ensure googleapis are available (clone if missing, skip update if present)
+proto-deps: init-submodules
+	@echo "Ensuring googleapis are available..."
+	@if [ ! -d "$(GOOGLEAPIS_PATH)" ]; then \
+		echo "Cloning googleapis..."; \
+		git clone --depth=1 https://github.com/googleapis/googleapis.git $(GOOGLEAPIS_PATH); \
+	else \
+		echo "googleapis already present, skipping update."; \
+	fi
 
+## proto-gen: Generate Go code from all .proto files using protoc
 proto-gen:
-	@echo "Generating Protobuf files via Buf..."
+	@echo "Generating Protobuf files via protoc..."
 	mkdir -p $(GEN_OUT)
-	buf generate
+	protoc \
+		--proto_path=$(PROTO_ROOT) \
+		--proto_path=$(GOOGLEAPIS_PATH) \
+		--go_out=$(GEN_OUT) --go_opt=paths=source_relative \
+		--go-grpc_out=$(GEN_OUT) --go-grpc_opt=paths=source_relative \
+		$(shell find $(PROTO_ROOT) -name '*.proto' -type f)
 
 journal-gen-proto: proto-gen
-
 sso-gen-proto: proto-gen
 
 journal-gen-sqlc:
@@ -74,10 +106,15 @@ sso-gen-sqlc:
 	@echo "Generating SQLC for SSO Service..."
 	cd $(SSO_DIR) && sqlc generate
 
-## proto-descriptor: Generate combined protobuf descriptor for Envoy via Buf
-proto-descriptor: buf-update
-	@echo "Generating combined protobuf descriptor via Buf..."
-	buf build -o combined_descriptor.pb --as-file-descriptor-set
+## proto-descriptor: Generate combined protobuf descriptor for Envoy
+proto-descriptor:
+	@echo "Generating protobuf descriptor..."
+	protoc \
+		--proto_path=$(PROTO_ROOT) \
+		--proto_path=$(GOOGLEAPIS_PATH) \
+		--descriptor_set_out=combined_descriptor.pb \
+		--include_imports \
+		$(shell find $(PROTO_ROOT) -name '*.proto' -type f)
 
 # Env data generate
 key-gen: build-envgen
@@ -98,9 +135,6 @@ sso-gen: update_proto build-envgen
 journal-gen: update_proto build-envgen
 	@$(ENVGEN) -env="configs/journal_service/journal.env" -key="$(KEY)" -sed="$(SED)" -gen="$(GEN)"
 	@echo "Journal variable $(KEY) updated"
-
-update_proto:
-	git submodule update --remote --merge protos
 
 ## test: Run all tests in the project
 test:
@@ -128,12 +162,10 @@ build-envgen:
 	mkdir -p .bin
 	go build -o $(ENVGEN) cmd/envgen/main.go
 
-# ИСПРАВЛЕНО: Добавлены раздельные таблицы версий для избежания конфликтов
 migrate-up:
 	goose -table goose_sso_version -dir internal/sso_service/sql/schema postgres $(DB_URL) up
 	goose -table goose_journal_version -dir internal/journal_service/sql/schema postgres $(DB_URL) up
 
-# ИСПРАВЛЕНО: Исправлен ошибочный 'up' на 'down' во второй команде и добавлены таблицы версий
 migrate-down:
 	goose -table goose_sso_version -dir internal/sso_service/sql/schema postgres $(DB_URL) down
 	goose -table goose_journal_version -dir internal/journal_service/sql/schema postgres $(DB_URL) down

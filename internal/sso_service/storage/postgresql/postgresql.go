@@ -124,7 +124,7 @@ func (s *Storage) CreateUsers(
 				Email:        user.Email,
 				Username:     user.Login,
 				PasswordHash: user.PasswordHash,
-				UserRole:         user.Role.String(),
+				UserRole:     user.Role.String(),
 			}
 			if user.Id != uuid.Nil {
 				arg.ID = pkgmapper.ToPgUUID(user.Id)

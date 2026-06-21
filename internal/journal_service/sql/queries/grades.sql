@@ -10,6 +10,12 @@ INSERT INTO grades (
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7
 )
+ON CONFLICT ON CONSTRAINT unique_student_lesson 
+DO UPDATE SET
+    status_code_id = EXCLUDED.status_code_id,
+    score = EXCLUDED.score,
+    note = EXCLUDED.note,
+    lesson_date = EXCLUDED.lesson_date
 RETURNING
     id,
     student_id,
@@ -45,7 +51,7 @@ UPDATE grades
 SET
     status_code_id = $2,
     score = $3,
-    note = coalesce(sqlc.narg('note'), note)
+    note = $4 -- Теперь NULL полностью затрет старую заметку
 WHERE id = $1
 RETURNING
     id,

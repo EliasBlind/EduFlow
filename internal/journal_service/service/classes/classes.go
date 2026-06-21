@@ -5,10 +5,11 @@ import (
 	"errors"
 	"log/slog"
 
-	"github.com/EliasBlind/EduFlow/internal/journal_service/domain"
-	usercalimas "github.com/EliasBlind/EduFlow/pkg/user_calimas"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
+
+	"github.com/EliasBlind/EduFlow/internal/journal_service/domain"
+	usercalimas "github.com/EliasBlind/EduFlow/pkg/user_calimas"
 )
 
 type PostgresSql interface {
@@ -129,11 +130,6 @@ func (a *Auth) ListClasses(ctx context.Context) ([]domain.Class, error) {
 		"user_id", claims.ID,
 		"role", claims.Role,
 	)
-
-	if !claims.Role.IsAdmin() {
-		log.Warn("permission denied: listing all classes requires admin role")
-		return nil, domain.ErrForbidden
-	}
 
 	classes, err := a.sql.ListClasses(ctx)
 	if err != nil {

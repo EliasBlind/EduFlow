@@ -27,6 +27,7 @@ static_resources:
                           expose_headers: "grpc-status,grpc-message"
                           max_age: "1728000"
                       routes:
+                        # --- SSO (специфичные пути ДО общего "/v1/") ---
                         - match:
                             prefix: "/v1/auth/"
                           route:
@@ -36,9 +37,15 @@ static_resources:
                           route:
                             cluster: cluster_sso
                         - match:
+                            prefix: "/v1/create_users"
+                          route:
+                            cluster: cluster_sso
+                        # --- Journal (catch-all для остальных /v1/, держать ПОСЛЕДНИМ среди /v1) ---
+                        - match:
                             prefix: "/v1/"
                           route:
                             cluster: cluster_journal
+                        # --- gRPC-нативные пути (не пересекаются с /v1/) ---
                         - match:
                             prefix: "/grpc.reflection.v1.ServerReflection/"
                           route:

@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/EliasBlind/EduFlow/internal/journal_service/domain"
-	"github.com/EliasBlind/EduFlow/internal/journal_service/storage/sqlgen"
-	mapper "github.com/EliasBlind/EduFlow/pkg/mappers"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
+
+	"github.com/EliasBlind/EduFlow/internal/journal_service/domain"
+	"github.com/EliasBlind/EduFlow/internal/journal_service/storage/sqlgen"
+	mapper "github.com/EliasBlind/EduFlow/pkg/mappers"
 )
 
 func (s *Storage) RecordGrade(
@@ -181,9 +182,6 @@ func (s *Storage) UpdateGrades(
 
 	log := s.log.With(
 		slog.String("op", op),
-		slog.String("grade_id", params.GradeID.String()),
-		slog.Any("grade", params.Grade),
-		slog.Any("status_code", params.StatusCodeID.String()),
 	)
 
 	log.Debug("attempting to update grade")
