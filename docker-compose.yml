@@ -80,7 +80,6 @@ services:
       - ./configs:/app/configs:ro
       - ./internal:/app/internal:ro 
     environment:
-      # Эти переменные не нужны, если код читает YAML, но оставлю для совместимости
       REDIS_HOST: redis
       REDIS_PASSWORD: CBx1AmUpuhAwshaFwUDpgU0M3yGnmkKGkn9q0rwbLlU=
     command: /app/sso_service
