@@ -1,0 +1,38 @@
+env: "local" # local, dev, prod
+
+postgres:
+  host: "postgres"
+  sslmode: "disable"
+  max_open_conns: 10
+
+grpc:
+  host: "0.0.0.0"
+  port: 4042
+  timeout: 2m
+
+redis:
+  host: "redis"
+  db: 0
+
+mailtrap:
+  host: "mailpit"
+  sender_email: "eliaseromanov@gmail.com"
+  use_tls: false
+
+spice:
+  host: "localhost"
+  use_ssl: false
+  timeout: 5s  
+
+token:
+  access_ttl: 2h
+  refresh_ttl: 770h
+  verification_ttl: 3m
+
+locale:
+  default_lang: en
+  path: "internal/sso_service/locales"
+
+journal:
+  host: "journal-service"
+  port: 4043

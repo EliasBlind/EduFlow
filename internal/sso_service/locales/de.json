@@ -1,0 +1,14 @@
+{
+  "common.invalid_data": "Die angegebenen Daten sind ungültig",
+  "common.internal_error": "Ein interner Serverfehler ist aufgetreten",
+  "auth.weak_password": "Das Passwort ist zu schwach",
+  "auth.user_already_exists": "Ein Benutzer mit dieser E-Mail existiert bereits",
+  "auth.user_not_found": "Benutzer nicht gefunden",
+  "auth.unauthenticated": "Authentifizierung fehlgeschlagen. Token ungültig oder abgelaufen",
+  "auth.access_denied": "Zugriff verweigert. Keine Berechtigung",
+  "verify.invalid_code": "Der Bestätigungscode ist falsch",
+  "verify.code_expired": "Der Bestätigungscode ist abgelaufen",
+  "verify.code_not_found": "Bestätigungscode nicht gefunden",
+  "infra.storage_unavailable": "Speicherdienst vorübergehend nicht verfügbar",
+  "auth.token_audience_mismatch": "Token gehört zu einer anderen Anwendung"
+}

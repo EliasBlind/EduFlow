@@ -1,0 +1,41 @@
+caveat expired(current_time timestamp, expiry_time timestamp) {
+	current_time < expiry_time
+}
+
+definition user {}
+
+definition class {
+	relation class_teacher: user
+	relation student: user
+	relation elder: user
+	relation subject: subject
+	permission any_subject_teacher = subject->is_teacher
+	permission is_student = student
+	permission is_class_teacher = class_teacher
+	permission is_elder = elder
+}
+
+definition subject {
+	relation class: class
+	relation teacher: user
+	permission is_student = class->is_student
+	permission is_teacher = teacher
+	permission view_grades = teacher + class->is_class_teacher
+}
+
+definition grade {
+	relation class: class
+	relation student: user
+	relation subject: subject
+	permission view = subject->is_teacher + student + class->is_class_teacher
+	permission edit = subject->is_teacher
+}
+
+definition skip {
+	relation class: class
+	relation student: user
+	relation subject: subject
+	relation temporary_editor: user with expired
+	permission view = subject->is_teacher + student + class->is_class_teacher + class->is_elder
+	permission edit = subject->is_teacher + temporary_editor
+}

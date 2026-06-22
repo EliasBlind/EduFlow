@@ -1,0 +1,4 @@
+github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+google.golang.org/protobuf/cmd/protoc-gen-go@latest
+google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+github.com/pressly/goose/v3/cmd/goose@latest

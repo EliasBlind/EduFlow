@@ -1,0 +1,14 @@
+{
+  "common.invalid_data": "Os dados fornecidos são inválidos",
+  "common.internal_error": "Ocorreu um erro interno no servidor",
+  "auth.weak_password": "A senha é muito fraca",
+  "auth.user_already_exists": "Já existe um usuário com este e-mail",
+  "auth.user_not_found": "Usuário não encontrado",
+  "auth.unauthenticated": "Falha na autenticação. O token é inválido ou expirou",
+  "auth.access_denied": "Acesso negato. Você não tem permissão",
+  "verify.invalid_code": "O código de verificação está incorreto",
+  "verify.code_expired": "O código de verificação expirou",
+  "verify.code_not_found": "Código de verificação não encontrado",
+  "infra.storage_unavailable": "O serviço de armazenamento está temporariamente indisponibile",
+  "auth.token_audience_mismatch": "O token pertence a outra aplicação"
+}
