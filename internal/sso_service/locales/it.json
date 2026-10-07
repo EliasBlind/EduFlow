@@ -1,0 +1,14 @@
+{
+  "common.invalid_data": "I dati forniti non sono validi",
+  "common.internal_error": "Si è verificato un errore interno del server",
+  "auth.weak_password": "La password è troppo debole",
+  "auth.user_already_exists": "Esiste già un utente con questa email",
+  "auth.user_not_found": "Utente non trovato",
+  "auth.unauthenticated": "Autenticazione fallita. Il token è invalido o scaduto",
+  "auth.access_denied": "Accesso negato. Non hai i permessi necessari",
+  "verify.invalid_code": "Il codice di verifica è errato",
+  "verify.code_expired": "Il codice di verifica è scaduto",
+  "verify.code_not_found": "Codice di verifica non trovato",
+  "infra.storage_unavailable": "Il servizio di archiviazione è temporaneamente non disponibile",
+  "auth.token_audience_mismatch": "Il token appartiene a un'altra applicazione"
+}

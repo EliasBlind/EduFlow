@@ -1,0 +1,14 @@
+{
+  "common.invalid_data": "The provided data is invalid or malformed",
+  "common.internal_error": "An internal server error occurred. Please try again later",
+  "auth.weak_password": "The password is too weak. It must be more complex",
+  "auth.user_already_exists": "A user with this email address already exists",
+  "auth.user_not_found": "User not found",
+  "auth.unauthenticated": "Authentication failed. The token is invalid or expired",
+  "auth.access_denied": "Access denied. You do not have permission to perform this action",
+  "verify.invalid_code": "The verification code is incorrect",
+  "verify.code_expired": "The verification code has expired. Please request a new one",
+  "verify.code_not_found": "Verification code not found",
+  "infra.storage_unavailable": "The storage service is temporarily unavailable",
+  "auth.token_audience_mismatch": "Token audience mismatch."
+}

@@ -1,0 +1,14 @@
+{
+  "common.invalid_data": "提供されたデータが無効です",
+  "common.internal_error": "内部サーバーエラーが発生しました",
+  "auth.weak_password": "パスワードが脆弱すぎます",
+  "auth.user_already_exists": "このメールアドレスのユーザーは既に存在します",
+  "auth.user_not_found": "ユーザーが見つかりません",
+  "auth.unauthenticated": "認証に失敗しました。トークンが無効か期限切れです",
+  "auth.access_denied": "アクセスが拒否されました。権限がありません",
+  "verify.invalid_code": "認証コードが正しくありません",
+  "verify.code_expired": "認証コードの期限が切れています",
+  "verify.code_not_found": "認証コードが見つかりません",
+  "infra.storage_unavailable": "ストレージサービスは現在利用できません",
+  "auth.token_audience_mismatch": "トークンがこのアプリケーションのものではありません"
+}

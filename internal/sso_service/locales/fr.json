@@ -1,0 +1,14 @@
+{
+  "common.invalid_data": "Les données fournies sont invalides",
+  "common.internal_error": "Une erreur interne du serveur est survenue",
+  "auth.weak_password": "Le mot de passe est trop faible",
+  "auth.user_already_exists": "Un utilisateur avec cet e-mail existe déjà",
+  "auth.user_not_found": "Utilisateur non trouvé",
+  "auth.unauthenticated": "Échec de l'authentification. Jeton invalide ou expiré",
+  "auth.access_denied": "Accès refusé. Autorisation insuffisante",
+  "verify.invalid_code": "Le code de vérification est incorrect",
+  "verify.code_expired": "Le code de vérification a expiré",
+  "verify.code_not_found": "Code de vérification introuvable",
+  "infra.storage_unavailable": "Le service de stockage est temporairement indisponible",
+  "auth.token_audience_mismatch": "Le jeton appartient à une autre application"
+}
